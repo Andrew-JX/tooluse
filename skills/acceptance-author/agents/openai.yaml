@@ -1,0 +1,4 @@
+interface:
+  display_name: "验收判据作者"
+  short_description: "在实现前冻结判据并攻击限定词、度量口径与假绿灯漏洞"
+  default_prompt: "Use $acceptance-author to turn this requirement into a frozen, falsifiable acceptance contract."
