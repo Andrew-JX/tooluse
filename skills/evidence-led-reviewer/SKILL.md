@@ -88,6 +88,7 @@ description: Evidence-led engineering review for code changes, release candidate
 - 盲区清单里问过哪几条、跳过哪几条；
 - 是否允许提交、合并、部署或进入下一任务；
 - **最没把握的判断**：这次审查里我自己最可能看错的一处。
+- 本次真正触发过的规则：（skill 名 + 条目号。没触发的不要列，列了就失去意义）
 
 没有 actionable finding 时不要虚构列表，直接陈述通过依据和剩余风险。
 
