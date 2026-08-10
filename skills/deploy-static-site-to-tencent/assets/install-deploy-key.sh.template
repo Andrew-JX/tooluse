@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+readonly public_key_file="${1:-}"
+readonly authorized_keys='/home/@@DEPLOY_USER@@/.ssh/authorized_keys'
+readonly key_comment='github-actions-@@SITE_SLUG@@'
+readonly forced_command='command="/usr/local/sbin/deploy-@@SITE_SLUG@@",restrict'
+
+test -s "$public_key_file"
+public_key="$(tr -d '\r\n' < "$public_key_file")"
+
+if [[ ! "$public_key" =~ ^ssh-ed25519\ [A-Za-z0-9+/=]+\ github-actions-@@SITE_SLUG@@$ ]]; then
+  echo 'Unexpected deployment public key format.' >&2
+  exit 65
+fi
+
+install -d -o @@DEPLOY_USER@@ -g @@DEPLOY_USER@@ -m 700 "/home/@@DEPLOY_USER@@/.ssh"
+touch "$authorized_keys"
+chown @@DEPLOY_USER@@:@@DEPLOY_USER@@ "$authorized_keys"
+chmod 600 "$authorized_keys"
+
+expected_line="${forced_command} ${public_key}"
+readonly expected_line
+
+if grep -F "${key_comment}" "$authorized_keys" | grep -Fvxq "$expected_line"; then
+  echo 'A conflicting deployment key comment already exists.' >&2
+  exit 66
+fi
+
+if ! grep -Fqx "$expected_line" "$authorized_keys"; then
+  printf '%s\n' "$expected_line" >> "$authorized_keys"
+fi
+
+test "$(grep -Fxc "$expected_line" "$authorized_keys")" -eq 1
+test "$(grep -Fc "$key_comment" "$authorized_keys")" -eq 1
+rm -f -- "$public_key_file"
+echo 'RESTRICTED_PUBLIC_KEY_INSTALLED'

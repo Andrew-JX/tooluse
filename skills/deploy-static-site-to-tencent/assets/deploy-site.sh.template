@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+export PATH='/usr/sbin:/usr/bin:/sbin:/bin'
+unset BASH_ENV ENV CDPATH
+
+readonly current='@@WEB_ROOT@@'
+readonly max_archive_megabytes=@@MAX_ARCHIVE_MB@@
+readonly max_extracted_bytes=@@MAX_EXTRACTED_BYTES@@
+readonly max_members=@@MAX_MEMBERS@@
+
+original_command="${SSH_ORIGINAL_COMMAND:-}"
+if [[ "$original_command" =~ ^deploy\ ([0-9a-f]{40}-[0-9]+-[0-9]+)$ ]]; then
+  release_id="${BASH_REMATCH[1]}"
+else
+  echo 'Only a validated @@SITE_SLUG@@ deployment is allowed.' >&2
+  exit 64
+fi
+
+readonly release_id
+readonly release="${current}-release-${release_id}"
+readonly backup="${current}-backup-${release_id}"
+readonly failed="${current}-failed-${release_id}"
+archive="$(mktemp /tmp/@@SITE_SLUG@@-upload-XXXXXXXX.tar.gz)"
+readonly archive
+swapped=0
+
+cleanup() {
+  rm -f -- "$archive"
+}
+
+rollback() {
+  status=$?
+  trap - ERR
+  if [[ "$swapped" == '1' && -d "$backup" ]]; then
+    sudo mv "$current" "$failed"
+    sudo mv "$backup" "$current"
+    sudo systemctl reload nginx || true
+  fi
+  cleanup
+  exit "$status"
+}
+
+trap cleanup EXIT
+trap rollback ERR
+
+dd bs=1M count="$max_archive_megabytes" iflag=fullblock status=none > "$archive"
+test -s "$archive"
+
+python3 - "$archive" "$max_extracted_bytes" "$max_members" <<'PY'
+import pathlib
+import sys
+import tarfile
+
+archive_path = sys.argv[1]
+max_bytes = int(sys.argv[2])
+max_members = int(sys.argv[3])
+
+with tarfile.open(archive_path, mode="r:gz") as archive:
+    members = archive.getmembers()
+    if len(members) > max_members:
+        raise SystemExit("Archive contains too many entries")
+
+    total_size = 0
+    for member in members:
+        path = pathlib.PurePosixPath(member.name)
+        if path.is_absolute() or ".." in path.parts:
+            raise SystemExit("Archive contains an unsafe path")
+        if member.issym() or member.islnk() or member.isdev():
+            raise SystemExit("Archive contains a disallowed entry type")
+        total_size += member.size
+
+    if total_size > max_bytes:
+        raise SystemExit("Archive expands beyond the deployment limit")
+PY
+
+test -d "$current"
+test ! -e "$release"
+test ! -e "$backup"
+test ! -e "$failed"
+
+sudo install -d -o @@DEPLOY_USER@@ -g @@DEPLOY_USER@@ -m 0755 "$release"
+tar -xzf "$archive" -C "$release" --no-same-owner --no-same-permissions
+test -s "$release/index.html"
+test -d "$release/assets"
+grep -Fq '@@HEALTHCHECK_TEXT@@' "$release/index.html"
+chmod -R a+rX "$release"
+
+sudo mv "$current" "$backup"
+sudo mv "$release" "$current"
+swapped=1
+
+sudo nginx -t
+sudo systemctl reload nginx
+curl --fail --silent --show-error --retry 3 --retry-delay 2 \
+  https://@@DOMAIN@@/ | grep -Fq '@@HEALTHCHECK_TEXT@@'
+
+trap - ERR
+echo "DEPLOY_OK ${release_id}"

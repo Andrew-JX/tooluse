@@ -1,0 +1,70 @@
+name: Deploy to Tencent Cloud
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: @@SITE_SLUG@@-tencent-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy production site
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DEPLOY_HOST: ${{ secrets.TENCENT_HOST }}
+      DEPLOY_USER: ${{ secrets.TENCENT_USER }}
+      RELEASE_ID: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: @@NODE_VERSION@@
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          @@INSTALL_COMMAND@@
+
+      - name: Build production site
+        run: |
+          @@BUILD_COMMAND@@
+
+      - name: Verify build output
+        run: |
+          test -s "@@OUTPUT_DIR@@/index.html"
+          test -d "@@OUTPUT_DIR@@/assets"
+          grep -Fq '@@HEALTHCHECK_TEXT@@' "@@OUTPUT_DIR@@/index.html"
+
+      - name: Configure deployment SSH key
+        env:
+          DEPLOY_KEY: ${{ secrets.TENCENT_DEPLOY_KEY }}
+          KNOWN_HOSTS: ${{ secrets.TENCENT_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/tencent_deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/tencent_deploy ~/.ssh/known_hosts
+
+      - name: Package release
+        run: tar -czf "/tmp/@@SITE_SLUG@@-${RELEASE_ID}.tar.gz" -C "@@OUTPUT_DIR@@" .
+
+      - name: Upload, activate, and verify release
+        run: |
+          cat "/tmp/@@SITE_SLUG@@-${RELEASE_ID}.tar.gz" | ssh \
+            -i ~/.ssh/tencent_deploy \
+            -o IdentitiesOnly=yes \
+            -o ServerAliveInterval=30 \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "deploy ${RELEASE_ID}"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deploy Static Site to Tencent"
+  short_description: "Secure static-site deploys to Tencent nginx"
+  default_prompt: "Use $deploy-static-site-to-tencent to configure a secure GitHub Actions deployment for this static site."
