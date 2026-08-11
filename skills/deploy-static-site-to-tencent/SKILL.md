@@ -1,72 +1,54 @@
 ---
 name: deploy-static-site-to-tencent
-description: Configure and verify secure automatic deployment of a static web build from GitHub Actions to Tencent Cloud or another Ubuntu nginx server. Use when Codex needs to publish a Vite, React, Vue, or similar static site; replace manual scp deployment; create a forced-command SSH deploy key; add GitHub Actions Secrets; implement atomic release switching and rollback; configure China-facing nginx/HTTPS/ICP requirements; or diagnose a failed static-site deployment pipeline.
+description: Assess, design, and verify a secure GitHub Actions deployment from a repository to Tencent Cloud or another self-managed Ubuntu host. Use when Codex needs to replace manual deployment, review a forced-command SSH boundary, define atomic release and rollback criteria, protect server-only credentials, configure China-facing nginx/HTTPS/ICP requirements, or diagnose a failed deployment pipeline. Apply the portable security checklist across projects, but keep static-site and full-stack implementation shapes separate.
 ---
 
 # Deploy Static Site to Tencent
 
-Build a repeatable deployment path from a GitHub `main` push to an Ubuntu nginx document root. Keep the deploy key unable to open a shell or run arbitrary commands.
+Use a portable security checklist to review or design deployment. Do not assume that a static artifact pipeline, a full-stack checkout, or another project's scripts can be copied unchanged.
 
 ## 1. Establish the boundary
 
-Use this skill only when the deploy artifact is static files. Stop and redesign when the release also requires a backend restart, database migration, secret material inside the artifact, or coordinated multi-service rollout.
-
 Before mutating anything:
 
-- Inspect repository instructions, dirty files, build command, output directory, branch, and existing workflows.
-- Inspect DNS, nginx, Certbot, current document root, disk, and passwordless `sudo` with read-only commands.
+- Inspect repository instructions, dirty files, build and verification commands, release artifact, branch policy, existing workflows, and server-side state.
+- Decide whether the release is static files or requires backend restart, database migration, server-only environment variables, or coordinated services.
+- Inspect DNS, nginx, Certbot, current release location, disk, runtime ownership, and privilege boundary with read-only commands.
 - Obtain explicit authority before adding GitHub Secrets, installing an SSH key, pushing, or changing production.
-- Preserve existing nginx configuration and current site as backups. Never treat a successful build as visual acceptance.
+- Preserve current configuration and release state for rollback. Never treat a successful build as visual acceptance.
 
 Read [references/runbook.md](references/runbook.md) before server bootstrap, China-facing compliance work, failure diagnosis, or production closeout.
 
-## 2. Scaffold repository files
+## 2. Apply the portable acceptance checklist
 
-Run the bundled generator from the skill directory:
+Require every applicable item below. Design project-specific code only after the checklist is fixed.
 
-```powershell
-python scripts/scaffold.py `
-  --project-root E:\path\to\project `
-  --site-slug example-site `
-  --domain example.example.com `
-  --web-root /var/www/example-site `
-  --healthcheck-text "expected public marker"
-```
+1. Create one dedicated Ed25519 key per repository. Never place a personal or general sudo-capable private key in GitHub Actions.
+2. Force a root-owned entrypoint with `command="...",restrict`. Attempt an unrelated command such as `id`; require the entrypoint to reject it.
+3. Pin `known_hosts` from a separately trusted connection. Do not trust a fresh `ssh-keyscan` result during every deployment.
+4. Accept only a strict, anchored release identifier. Reject malformed verbs, extra arguments, and releases outside the authorized branch or history.
+5. When transporting an archive, validate every member before extraction and reject unsafe paths, links, devices, and expansion beyond defined limits.
+6. Serialize production deployments and switch releases atomically at the unit appropriate to the project.
+7. Prove failure rollback restores the previous runnable state. Keep database rollback separate unless a reviewed migration plan explicitly permits it.
+8. Keep server-only `.env`, database credentials, provider keys, and other production secrets out of artifacts, images, logs, workflow output, and Git.
+9. Make the health check distinguish the requested release from the previous release; a generic 200 response is insufficient.
 
-Pass the real build and output values when they differ from `npm run build` and `dist`. The generator creates:
+Treat these as acceptance criteria, not proof that any particular implementation is correct. Exercise permission, rejection, rollback, concurrency, and secret-hygiene boundaries in an isolated environment before production.
 
-- `.github/workflows/deploy-tencent.yml`
-- `ops/deploy-<site-slug>.sh`
-- `ops/install-<site-slug>-deploy-key.sh`
+## 3. Compare reference implementations
 
-It refuses to overwrite existing files unless `--force` is supplied. Review every generated diff; templates are a safe baseline, not permission to replace project-specific behavior.
+- `Andrew-JX/mj-portfolio` → `ops/`: static Vite output, a tar archive streamed over SSH stdin, validated archive members, atomic `/var/www` directory replacement, and HTTPS marker verification.
+- `Andrew-JX/FitMind_ai` → `fitmind-ai/deploy/scripts/`: pnpm-verified full-stack deployment, a strict `deploy <main SHA>` command, server-side Git checkout, server-only `.env` and database credentials, migrations, Docker services, `flock`, image rollback, and deployment-specific shell tests.
 
-## 3. Verify locally and on the server
+These are two real but different deployment shapes. Use them to inspect decisions and failure handling; do not copy either script set across projects without rebuilding the project-specific threat model, release unit, rollback boundary, and tests.
 
-Run the repository's declared build command. Then verify the output contains a non-empty `index.html`, an assets directory, and the configured health marker.
+## 4. Implement and verify the project-specific path
 
-Upload only the generated server scripts with an already-trusted administrator connection. Run `bash -n` on Ubuntu before installing the deploy script as `root:root` mode `0755` at the forced-command path embedded by the installer.
+Use the repository's declared build and verification commands. Add only the workflow, server entrypoint, key installer, and tests justified by that repository's release shape.
 
-Generate a dedicated, temporary Ed25519 key with no passphrase. Install only its public half through the generated installer. The resulting `authorized_keys` entry must include both:
+Store the dedicated private key and pinned host keys as encrypted repository Secrets without printing their values. Delete temporary private-key copies after the Secret names are visible, and confirm Git status contains no credential files.
 
-```text
-command="/usr/local/sbin/deploy-<site-slug>",restrict
-```
-
-Test the dedicated key by attempting an unrelated command such as `id`. The test passes only when the fixed deploy script rejects it. Do not put a normal sudo-capable SSH key into GitHub Actions.
-
-## 4. Configure GitHub
-
-Create these repository Secrets without printing their values:
-
-- `TENCENT_HOST`
-- `TENCENT_USER`
-- `TENCENT_DEPLOY_KEY`
-- `TENCENT_KNOWN_HOSTS`
-
-Pin `TENCENT_KNOWN_HOSTS` from an already-trusted connection; do not make every run trust a fresh `ssh-keyscan` result. Prefer `gh secret set`. If API access fails and a signed-in browser is used, obtain action-time confirmation before submitting the forms.
-
-Delete every local temporary private-key copy immediately after all four Secret names are visible in repository settings. Confirm Git status does not include a credential directory.
+Install the reviewed forced entrypoint through an already-trusted administrator connection. Verify its ownership and permissions, then prove the dedicated key rejects an unrelated command. Test strict release parsing, archive or checkout validation, concurrency control, failure rollback, secret exclusion, and release-specific health checking without production credentials.
 
 ## 5. Prove the first real deployment
 
@@ -74,22 +56,22 @@ Commit and push only when authorized. Monitor the first Actions run through comp
 
 Require all of the following evidence:
 
-- dependency install, production build, artifact checks, SSH setup, upload, activation, and health check succeeded;
-- the live HTML points at the new hashed asset;
-- nginx serves HTTPS and HTTP redirects to HTTPS;
-- a release-specific backup directory exists;
-- the temporary upload file is gone;
+- repository verification, production build, SSH setup, release activation, and release-specific health checks succeeded;
+- the live service identifies the requested commit or release rather than merely returning 200;
+- nginx serves HTTPS and HTTP redirects as intended;
+- the previous release remains available according to the reviewed rollback design;
+- temporary uploads and local credential files are absent;
 - the server has exactly one matching restricted deploy-key entry;
-- the local worktree is clean and temporary credentials no longer exist.
+- the local worktree is clean.
 
-On failure, read the failed step log and inspect only release-scoped server paths. Repair the reusable template when the fault is generic, then rerun through a new commit or an authorized manual dispatch.
+On failure, read the failed step log and inspect only release-scoped server paths. Repair the project implementation when the fault is local; update this checklist only when evidence shows a portable boundary is missing.
 
 ## 6. Report accurately
 
 Distinguish:
 
-- **Pipeline verified**: a real push completed and the live artifact changed.
-- **Mechanically verified**: scaffolding, syntax, or build checks passed without a production run.
+- **Pipeline verified**: a real authorized release completed and the live version changed.
+- **Mechanically verified**: source, syntax, isolated tests, or build checks passed without a production run.
 - **Visually unverified**: the user has not inspected the deployed page.
 
-Report the Actions run URL, commit SHA, live URL, backup path, certificate renewal state, and any remaining compliance item. Never publish a private key, Secret value, SSH host hash, or public-security application data code.
+Report the Actions run URL, commit SHA, live URL, rollback state, certificate renewal state, and any remaining compliance item. Never publish a private key, Secret value, SSH host hash, database credential, or public-security application data code.

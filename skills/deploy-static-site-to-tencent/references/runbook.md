@@ -1,59 +1,74 @@
-# Static-site deployment runbook
+# Deployment runbook
 
 ## Contents
 
 1. Preconditions
-2. Security boundary
-3. GitHub and server bootstrap
-4. nginx, HTTPS, and China-facing compliance
-5. Failure patterns
-6. Closeout evidence
+2. Portable security boundary
+3. Reference implementations
+4. GitHub and server bootstrap
+5. nginx, HTTPS, and China-facing compliance
+6. Failure patterns
+7. Closeout evidence
 
 ## 1. Preconditions
 
-- Use an Ubuntu host with nginx, OpenSSH, Python 3, `tar`, `curl`, and passwordless `sudo` for the chosen deploy user.
-- Keep the application static. Add backend orchestration only through a separate design and approval.
+- Identify the release unit: static files, images and containers, a Git checkout, or coordinated services.
 - Point DNS to the server before Certbot or public health checks.
-- Make nginx listen on public ports while the document root stays a specific path under `/var/www/`.
-- Run the repository's own build before any remote change.
+- Run the repository's own verification and production build before any remote change.
+- Inventory server runtimes, ports, nginx ownership, disk, database dependencies, and existing sites before choosing paths or commands.
+- Keep server-only secrets on the server and outside the transported artifact.
 
-## 2. Security boundary
+## 2. Portable security boundary
 
 Use a dedicated Ed25519 key per repository. Never reuse a personal administrator key.
 
-The public key entry must force the root-owned deploy script and include `restrict`. This removes PTY, forwarding, agent forwarding, X11, and user rc while allowing only the fixed command. Test an unrelated command and require rejection.
+Force a root-owned entrypoint with `command="...",restrict`, pin trusted host-key lines, and prove an unrelated command is rejected. Validate a strict release identifier before any checkout, extraction, migration, or process change.
 
-The deploy script must:
+Serialize deployments. Validate transported content before activation. Switch at the release unit appropriate to the project, preserve a previous runnable state, and exercise failure recovery without production credentials. Keep database rollback separate unless an independently reviewed migration design permits it.
 
-- accept only `deploy <40-hex-sha>-<run-id>-<attempt>` from `SSH_ORIGINAL_COMMAND`;
-- cap compressed and expanded sizes;
-- use `dd iflag=fullblock` so short pipe reads are not miscounted as whole megabyte blocks;
-- reject absolute paths, `..`, symlinks, hard links, and device entries before extraction;
-- extract without owner or permission restoration;
-- require `index.html`, the assets directory, and a public health marker;
-- swap only release-scoped absolute paths;
-- roll back when nginx validation, reload, or public health checks fail;
-- remove the temporary upload file on success and failure.
+Exclude server-only `.env`, database credentials, provider keys, and private keys from Git, artifacts, images, and logs. Require a health signal that identifies the requested release, not just service availability.
 
-GitHub Secrets hold the private key and pinned host-key lines. Do not print, commit, log, or keep temporary copies after setup.
+## 3. Reference implementations
 
-## 3. GitHub and server bootstrap
+### mj-portfolio: static tar over stdin
 
-1. Back up the current nginx file and document root.
-2. Run `bash -n` on generated scripts on Ubuntu.
-3. Install the deploy script as `root:root` mode `0755` under `/usr/local/sbin/`.
-4. Generate a temporary Ed25519 key and upload only the public key through the installer.
+Repository: `Andrew-JX/mj-portfolio`, directory: `ops/`.
+
+- Builds a static Vite directory and streams a compressed tar archive through restricted SSH stdin.
+- Uses a strict release identifier, archive size limits, `dd iflag=fullblock`, and member validation before extraction.
+- Rejects absolute paths, `..`, links, and device entries; extracts without restoring archive ownership or permissions.
+- Replaces a release-scoped directory under `/var/www`, keeps a backup, validates nginx, and checks an HTTPS release marker.
+
+Use this shape only when the deployable unit is static files and archive transfer is justified.
+
+### FitMind_ai: full-stack deploy by exact SHA
+
+Repository: `Andrew-JX/FitMind_ai`, directory: `fitmind-ai/deploy/scripts/`.
+
+- Runs pnpm repository verification and production builds before sending the fixed command `deploy <github.sha>`.
+- Sends no tar archive and no server `.env`; the forced entrypoint fetches and checks out the exact commit only when it belongs to `origin/main`.
+- Uses `flock`, server-only database and provider credentials, migrations, Docker services, release-specific health gates, and image-only rollback without down migrations.
+- Includes isolated deployment and installer tests covering invalid commands, non-main commits, rollback execution, concurrent runs, forced-key installation, duplicate handling, and invalid keys.
+
+Use this shape only after reviewing the backend, database, image, and schema compatibility boundaries. Do not copy scripts between this project and the static implementation.
+
+## 4. GitHub and server bootstrap
+
+1. Back up the current nginx configuration and runnable release.
+2. Run repository-declared syntax and isolated deployment tests.
+3. Install the reviewed entrypoint as a root-owned executable.
+4. Generate a temporary dedicated Ed25519 key and install only its public half.
 5. Verify the forced key rejects `id` or another unrelated command.
-6. Pin the already-trusted host-key record as `TENCENT_KNOWN_HOSTS`.
-7. Add all four repository Secrets.
+6. Pin the host-key record from an already-trusted connection.
+7. Add only the encrypted repository Secrets required by the reviewed workflow.
 8. Delete temporary private-key files and inspect Git status before staging.
-9. Push the workflow and watch the first run through its public health check.
+9. Push only with explicit authorization and watch the first run through its release-specific health check.
 
-The workflow serializes deployments with a concurrency group and does not cancel an in-progress production upload.
+Use non-cancelling production concurrency in GitHub Actions and a server-side lock when overlapping releases could corrupt state.
 
-## 4. nginx, HTTPS, and China-facing compliance
+## 5. nginx, HTTPS, and China-facing compliance
 
-For a Vite/React/Vue SPA, use a specific `server_name`, a specific `root`, and:
+For a Vite/React/Vue SPA, use a specific `server_name`, a specific document root, and:
 
 ```nginx
 location / {
@@ -61,7 +76,7 @@ location / {
 }
 ```
 
-Add immutable caching only for hashed/static asset extensions; do not mark `index.html` immutable. Enable gzip once at the correct nginx scope. Always run `sudo nginx -t` before reload.
+Add immutable caching only for hashed/static assets; do not mark `index.html` immutable. Enable gzip once at the correct nginx scope. Always run `sudo nginx -t` before reload.
 
 Use Certbot for HTTPS and verify `certbot.timer` is enabled and active. The displayed expiry date is the current certificate's end date; successful automatic renewal replaces it before then.
 
@@ -73,38 +88,38 @@ For a public mainland-China site:
 - treat a public-security application data code as private workflow data, not as the public `公网安备` number;
 - publish the police record number and icon only after approval provides the actual public number.
 
-## 5. Failure patterns
+## 6. Failure patterns
 
 ### Gzip archive ends early
 
-If Python or tar reports an unexpected EOF and the sender reports a broken pipe, check that the receiver uses `dd iflag=fullblock`. Without it, pipe short reads consume the `count` limit early.
+For an archive-over-stdin implementation, if Python or tar reports an unexpected EOF and the sender reports a broken pipe, check whether pipe short reads consumed a byte-count limit early. The mj reference uses `dd iflag=fullblock` for this implementation-specific failure.
 
 ### GitHub API TLS timeouts
 
 Check local `HTTP_PROXY`, `HTTPS_PROXY`, and `ALL_PROXY`. Git push may work while Actions API or Secret endpoints fail. Retry the CLI; use a signed-in browser only after confirming the exact external Secret submissions.
 
-### Upload is slow
+### Upload or server-side build is slow
 
-Tencent lightweight instances may have low peak bandwidth, and GitHub Runner traffic can be cross-border. Measure progress by the release-scoped temporary file. Do not restart a growing upload. Consider artifact reuse or server-side Git builds only after evaluating registry access and server memory.
+Measure the active release path before restarting work. Cross-border artifact upload, registry access, and server-side dependency installation fail for different reasons; choose the release shape after measuring bandwidth, server memory, and registry reachability.
 
 ### Run succeeded but the page looks old
 
-Read live `index.html` and compare its hashed asset to the build. Check browser cache only after confirming the server artifact changed. `index.html` must not have immutable caching.
+Read the live version marker and compare it to the requested release. Check browser cache only after confirming the server release changed. A generic 200 response does not prove activation.
 
-### Health check failed after swap
+### Health check failed after activation
 
-Confirm rollback restored the previous document root and nginx still passes `nginx -t`. Keep the failed release directory for scoped diagnosis; never run a broad delete against `/var/www`.
+Confirm rollback restored the previous runnable release and public traffic still reaches it. Keep failed state in a release-scoped path for diagnosis; never run a broad delete against a shared document root, checkout parent, Docker store, or database.
 
-## 6. Closeout evidence
+## 7. Closeout evidence
 
 Record:
 
 - repository, branch, commit SHA, Actions run URL, and conclusion;
-- live domain and new hashed asset;
+- live domain and release-specific version marker;
 - nginx syntax result, HTTPS status, and Certbot timer state;
-- release backup path and failed-release path if any;
+- previous release and rollback result;
 - restricted key match count;
 - absence of temporary upload and local private-key files;
 - visual status as user-verified or unverified.
 
-Backups accumulate by design. Define an independently reviewed retention policy before automating their deletion.
+Backups and images accumulate by design. Define an independently reviewed retention policy before automating their deletion.
