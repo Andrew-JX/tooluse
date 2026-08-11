@@ -28,11 +28,11 @@ Serialize deployments. Validate transported content before activation. Switch at
 
 Exclude server-only `.env`, database credentials, provider keys, and private keys from Git, artifacts, images, and logs. Require a health signal that identifies the requested release, not just service availability.
 
-## 3. Reference implementations
+## 3. Reference shapes
 
-### mj-portfolio: static tar over stdin
+### Shape A — static artifact streamed over restricted SSH stdin
 
-Repository: `Andrew-JX/mj-portfolio`, directory: `ops/`.
+Reference implementation: `Andrew-JX/mj-portfolio` → `ops/` (public repository).
 
 - Builds a static Vite directory and streams a compressed tar archive through restricted SSH stdin.
 - Uses a strict release identifier, archive size limits, `dd iflag=fullblock`, and member validation before extraction.
@@ -41,16 +41,17 @@ Repository: `Andrew-JX/mj-portfolio`, directory: `ops/`.
 
 Use this shape only when the deployable unit is static files and archive transfer is justified.
 
-### FitMind_ai: full-stack deploy by exact SHA
+### Shape B — full-stack activation by exact commit
 
-Repository: `Andrew-JX/FitMind_ai`, directory: `fitmind-ai/deploy/scripts/`.
+This shape comes from an unpublished repository, so retain only its portable decisions and acceptance criteria. Do not disclose its repository, paths, domain, or package manager.
 
-- Runs pnpm repository verification and production builds before sending the fixed command `deploy <github.sha>`.
-- Sends no tar archive and no server `.env`; the forced entrypoint fetches and checks out the exact commit only when it belongs to `origin/main`.
-- Uses `flock`, server-only database and provider credentials, migrations, Docker services, release-specific health gates, and image-only rollback without down migrations.
-- Includes isolated deployment and installer tests covering invalid commands, non-main commits, rollback execution, concurrent runs, forced-key installation, duplicate handling, and invalid keys.
+- Runs the repository's own verification and production builds before sending the fixed command `deploy <sha>`.
+- Sends no application build artifact or server `.env` to the server; the forced entrypoint fetches and activates the exact commit only when it is traceable to the authorized branch.
+- Uses `flock`, server-only credentials, server-side migrations, and running-version or image rollback without down migrations.
+- Includes isolated deployment and installer tests covering invalid commands, unauthorized-branch commits, rollback execution, concurrent runs, forced-key installation, duplicate handling, and invalid keys.
+- Requires a release-specific health gate rather than a generic 200. The inspected implementation does not currently prove release identity, so this remains an unmet checklist item.
 
-Use this shape only after reviewing the backend, database, image, and schema compatibility boundaries. Do not copy scripts between this project and the static implementation.
+Use this shape only after reviewing the backend, database, image, and schema compatibility boundaries. Do not copy scripts between this shape and the static implementation.
 
 ## 4. GitHub and server bootstrap
 

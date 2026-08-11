@@ -1,9 +1,9 @@
 ---
-name: deploy-static-site-to-tencent
-description: Assess, design, and verify a secure GitHub Actions deployment from a repository to Tencent Cloud or another self-managed Ubuntu host. Use when Codex needs to replace manual deployment, review a forced-command SSH boundary, define atomic release and rollback criteria, protect server-only credentials, configure China-facing nginx/HTTPS/ICP requirements, or diagnose a failed deployment pipeline. Apply the portable security checklist across projects, but keep static-site and full-stack implementation shapes separate.
+name: deploy-to-self-managed-server
+description: Assess, design, and verify a secure GitHub Actions deployment from a repository to Tencent Cloud or another self-managed Ubuntu host. Use when Codex needs to replace manual deployment, review a forced-command SSH boundary, define atomic release and rollback criteria, protect server-only credentials, configure China-facing nginx/HTTPS/ICP requirements, or diagnose a failed deployment pipeline. Apply the portable security checklist to both static-artifact and full-stack deployments, but keep those implementation shapes separate.
 ---
 
-# Deploy Static Site to Tencent
+# Deploy to Self-Managed Server
 
 Use a portable security checklist to review or design deployment. Do not assume that a static artifact pipeline, a full-stack checkout, or another project's scripts can be copied unchanged.
 
@@ -35,10 +35,19 @@ Require every applicable item below. Design project-specific code only after the
 
 Treat these as acceptance criteria, not proof that any particular implementation is correct. Exercise permission, rejection, rollback, concurrency, and secret-hygiene boundaries in an isolated environment before production.
 
-## 3. Compare reference implementations
+## 3. Compare reference shapes
 
-- `Andrew-JX/mj-portfolio` → `ops/`: static Vite output, a tar archive streamed over SSH stdin, validated archive members, atomic `/var/www` directory replacement, and HTTPS marker verification.
-- `Andrew-JX/FitMind_ai` → `fitmind-ai/deploy/scripts/`: pnpm-verified full-stack deployment, a strict `deploy <main SHA>` command, server-side Git checkout, server-only `.env` and database credentials, migrations, Docker services, `flock`, image rollback, and deployment-specific shell tests.
+### Shape A — static artifact streamed over restricted SSH stdin
+
+Reference implementation: `Andrew-JX/mj-portfolio` → `ops/` (public repository). It streams a static artifact, validates archive members, switches a `/var/www` release atomically, and verifies an HTTPS release marker.
+
+### Shape B — full-stack activation by exact commit
+
+This shape comes from an unpublished repository, so describe only the shape and acceptance criteria; do not disclose its repository, paths, domain, or package manager.
+
+Send only a strict `deploy <sha>` command. Require the server to accept commits traceable to the authorized branch, fetch and activate the exact commit, keep server `.env` and credentials off the transport, serialize with `flock`, run migrations on the server, and roll back only images or the runnable application version without running down migrations. Exercise invalid commands, unauthorized-branch commits, rollback execution, concurrent runs, forced-key installation, duplicate entries, and invalid keys in isolation.
+
+Require a release-specific health gate rather than a generic 200 response. The inspected implementation of this shape does not currently prove release identity, so treat this as an unmet checklist item rather than a reference property.
 
 These are two real but different deployment shapes. Use them to inspect decisions and failure handling; do not copy either script set across projects without rebuilding the project-specific threat model, release unit, rollback boundary, and tests.
 

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Deploy Static Site to Tencent"
-  short_description: "Review secure self-hosted deployment boundaries"
-  default_prompt: "Use $deploy-static-site-to-tencent to review this deployment against portable security criteria."

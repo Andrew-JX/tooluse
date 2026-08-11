@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deploy to Self-Managed Server"
+  short_description: "Review secure self-hosted deployment boundaries"
+  default_prompt: "Use $deploy-to-self-managed-server to review this deployment against portable security criteria."
