@@ -37,21 +37,23 @@ Reference implementation: `Andrew-JX/mj-portfolio` → `ops/` (public repository
 - Builds a static Vite directory and streams a compressed tar archive through restricted SSH stdin.
 - Uses a strict release identifier, archive size limits, `dd iflag=fullblock`, and member validation before extraction.
 - Rejects absolute paths, `..`, links, and device entries; extracts without restoring archive ownership or permissions.
-- Replaces a release-scoped directory under `/var/www`, keeps a backup, validates nginx, and checks an HTTPS release marker.
+- Replaces a release-scoped directory under `/var/www`, keeps a backup, validates nginx, and checks an HTTPS content marker that every release carries, so item 9 is unmet here.
 
 Use this shape only when the deployable unit is static files and archive transfer is justified.
 
 ### Shape B — full-stack activation by exact commit
 
-This shape comes from an unpublished repository, so retain only its portable decisions and acceptance criteria. Do not disclose its repository, paths, domain, or package manager.
+Reference implementation: `Andrew-JX/FitMind_ai` → `fitmind-ai/deploy/scripts/` (public repository).
 
 - Runs the repository's own verification and production builds before sending the fixed command `deploy <sha>`.
 - Sends no application build artifact or server `.env` to the server; the forced entrypoint fetches and activates the exact commit only when it is traceable to the authorized branch.
 - Uses `flock`, server-only credentials, server-side migrations, and running-version or image rollback without down migrations.
 - Includes isolated deployment and installer tests covering invalid commands, unauthorized-branch commits, rollback execution, concurrent runs, forced-key installation, duplicate handling, and invalid keys.
-- Requires a release-specific health gate rather than a generic 200. The inspected implementation does not currently prove release identity, so this remains an unmet checklist item.
+- Requires a release-specific health gate rather than a generic 200. This implementation has no release-identifying check, so item 9 is unmet here as well.
 
 Use this shape only after reviewing the backend, database, image, and schema compatibility boundaries. Do not copy scripts between this shape and the static implementation.
+
+Item 9 is the one criterion neither reference implementation satisfies. Two independent implementations missed it, so require it explicitly in a new project instead of inferring it from either reference.
 
 ## 4. GitHub and server bootstrap
 
