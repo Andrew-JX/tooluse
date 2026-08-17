@@ -1,0 +1,4 @@
+interface:
+  display_name: "工作任务控制卡"
+  short_description: "用四个脱敏入口管理接任务、卡住、任务收尾和日终结账流程"
+  default_prompt: "Use $work-skill to structure this work task without exposing sensitive details."
