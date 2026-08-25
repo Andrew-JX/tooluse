@@ -61,9 +61,11 @@
 
 候选和冻结都是零调用，**分它们的不是证据多少，是有没有做过「不需要」这个判断**：候选是还没轮到，冻结是轮到过了、试下来觉得不需要。
 
-截至 2026-08-25，`acceptance-author`、`evidence-bound-executor`、`evidence-led-reviewer` 三个是**正在使用**；`deploy-to-self-managed-server`、`project-doc-system`、`thinking-toolkit`、`life-design-interview` 四个是**候选**；`work-skill` 是**冻结**。八个 Skill 现在全部从本仓库安装；存放位置变化不构成真实使用证据。
+截至 2026-08-25，`acceptance-author`、`evidence-bound-executor`、`evidence-led-reviewer`、`thinking-toolkit` 四个是**正在使用**；`deploy-to-self-managed-server`、`project-doc-system`、`life-design-interview` 三个是**候选**；`work-skill` 是**冻结**。八个 Skill 现在全部从本仓库安装；存放位置变化不构成真实使用证据。
 
-`thinking-toolkit` 与 `life-design-interview` 于 2026-08-25 新增，是候选，尚无任何真实调用。它们和其余六个不同源：规则不是从本人事故里长出来的，而是把一组外部方法整理成路由与边界，因此连「幸存者偏差」那条部分缓解也不适用——它们的失效样本一个都还没有。`life-design-interview` 的 `references/life-design.md` 有一节标〔补写〕，是原始材料缺页后按同一框架补的，不是原文。
+`thinking-toolkit` 与 `life-design-interview` 于 2026-08-25 新增。它们和其余六个不同源：规则不是从本人事故里长出来的，而是把一组外部方法整理成路由与边界，因此连「幸存者偏差」那条部分缓解也不适用——它们的失效样本一个都还没有。`life-design-interview` 仍是候选，零调用；它的 `references/life-design.md` 有一节标〔补写〕，是原始材料缺页后按同一框架补的，不是原文。
+
+`thinking-toolkit` 的证据只有**一次真实调用**：2026-08-25 用方法 02（双层解释法）解释本仓库本身，路由判断、两层结构与三样收尾都按 `SKILL.md` 执行。**这不满足「正在使用」定义里的「稳定的日常使用」那一半**，计入是用户裁定的结果，写在这里而不是把定义改宽——改定义去迁就个例，正是 `acceptance-author` 禁止的那种动作。另有两项减损：调用者是作者本人，且发生在写出它的同一个会话里；同日核查确认它在作者本机并未安装，该次调用走的是仓库内直接读取。
 
 三个交付 Skill 已在 `family-finance` 的 1B、2A、2B 真实批次形成完整证据链：历史会话归档能定位到各自 `SKILL.md` 的读取、紧随其后的合同冻结 / 候选实施 / 独立复核动作，以及对应合同和 candidate。三批分别经历 1、6、1 轮审查退回，判据回退均为 0；2B 真实拦下了「浏览器断言全过，但 Windows 根命令因进程清理超时退出 1」的假绿灯。这不是根据方法相似性倒推。`deploy-to-self-managed-server` 的安全判据来自两个真实部署，但清单式 Skill 尚未在下一项目触发，不能把底层机制证据冒充为 Skill 的复用与触发证据。`project-doc-system` 的脚手架、索引门禁与负向控制已在隔离临时项目跑通，并对两个真实项目做过只读探测，但没有任何项目按它建起过文档体系。
 
