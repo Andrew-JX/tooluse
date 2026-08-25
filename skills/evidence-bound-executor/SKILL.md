@@ -65,7 +65,7 @@ description: Implement a frozen task and hand off with evidence that survives in
 - 范围外发现的活记成新任务交出去，不顺手做。顺手做的代价是不可分辨——那批「六条全部修完」的改动里混进了一个会无条件 `DELETE FROM users` 的脚本，还被注册成正式命令写进了文档。
 - 三锚点流程默认授权创建本地提交，但不授权 push。除非契约或用户明确禁止，本地 contract、baseline 与 candidate 提交是流程前提；push、merge、tag 和发布仍需单独授权。
 - 确实不能创建本地提交时，以契约文件的绝对路径和内容哈希共同替代 `contract SHA`，交接时给出哈希算法与结果，供审查方重新计算；`baseline SHA` 仍取实现开始前的仓库提交。
-- 使用替代锚点时无法形成冻结 candidate，批次状态封顶为「⑥完成，未收口」，第⑦步只能给 `ADVISORY`，不得给 PASS。上一批没有形成获授权的冻结 candidate 时不要开始下一批。
+- 使用替代锚点时无法形成冻结 candidate，批次状态封顶为「⑥（执行）完成，未收口」，第⑦步（分级核验）只能给 `ADVISORY`，不得给 PASS。上一批没有形成获授权的冻结 candidate 时不要开始下一批。
 
 ## 7. 交接时区分五种状态，不许合并
 
