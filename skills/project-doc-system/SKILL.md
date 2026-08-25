@@ -9,12 +9,22 @@ description: Set up and grow a project's documentation so an agent can work from
 
 这份 skill 管四件事：一穷二白时写哪几份、索引怎么组织、什么条件下加下一份、怎么保证写下来的东西不烂掉。输出语言跟随用户。
 
+## 0. 脚本在哪
+
+下面的命令必须用**本 skill 目录内**的脚本路径。Skill 安装后当前工作目录是用户的项目，`scripts/` 不在那里，写相对路径会直接 `MODULE_NOT_FOUND`。先确定这个目录：
+
+```bash
+SKILL_DIR=<本 SKILL.md 所在目录>   # 例如 ~/.claude/skills/project-doc-system
+```
+
+`init-docs.mjs` 是一次性脚手架，从 `$SKILL_DIR` 跑就够了。`check-doc-index.mjs` 不一样——它要进项目的默认验证命令，所以必须**复制进目标项目**再接线；留在 skill 目录里意味着项目的 CI 依赖一个不在项目仓库里的文件，换台机器就失效。
+
 ## 1. 先判断项目在哪个阶段
 
 跑一次探测，不要凭印象：
 
 ```bash
-node scripts/init-docs.mjs --project-root <path> --dry-run
+node "$SKILL_DIR/scripts/init-docs.mjs" --project-root <path> --dry-run
 ```
 
 它会报告已有什么、缺什么、哪些生长条件已经触发。`--dry-run` 不写任何文件。
@@ -31,7 +41,7 @@ node scripts/init-docs.mjs --project-root <path> --dry-run
 生成：
 
 ```bash
-node scripts/init-docs.mjs --project-root <path>
+node "$SKILL_DIR/scripts/init-docs.mjs" --project-root <path>
 ```
 
 它只建这四份，已存在的一律跳过不覆盖。
@@ -83,12 +93,15 @@ node scripts/init-docs.mjs --project-root <path>
 
 索引与真实文档双向比对，脚本可直接用：
 
+先把脚本复制进项目（位置随项目惯例，下面以 `scripts/` 为例），再跑：
+
 ```bash
-node scripts/check-doc-index.mjs --project-root <path>
-node scripts/check-doc-index.mjs --project-root <path> --self-test
+cp "$SKILL_DIR/scripts/check-doc-index.mjs" <project-root>/scripts/
+node <project-root>/scripts/check-doc-index.mjs --project-root <project-root>
+node <project-root>/scripts/check-doc-index.mjs --project-root <project-root> --self-test
 ```
 
-接进项目的默认验证命令，不要留成「需要时手工跑」——不在默认路径上的门禁等于不存在。
+`--self-test` 遍历所有负向控制，必须先过它再接线。接进项目的默认验证命令，不要留成「需要时手工跑」——不在默认路径上的门禁等于不存在。
 
 项目专属的门禁（API 契约、目录清单、配置与文档一致）形状可移植但内容不可移植，按 [references/gates.md](references/gates.md) 手工配，**每条都要带负向控制**。一个不会失败的门禁保护不了任何东西：把被守护的事实改坏，门禁必须报错，否则它守的不是它声称守的那个属性。
 

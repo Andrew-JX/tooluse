@@ -36,9 +36,9 @@ description: Evidence-led engineering review for code changes, release candidate
 
 ## 严重度
 
-开始审查时读取 [severity-model.md](references/severity-model.md)。如项目已有严重度政策，以项目政策为准，并在输出中说明映射。
+开始审查时读取 [severity-model.md](references/severity-model.md)。判定因子与它们的顺序在那里定义，本处不复述。如项目已有严重度政策，以项目政策为准，并在输出中说明映射。
 
-严重度由“当前影响 × 可达性 × 爆炸半径 × 可恢复性”决定，不由文件类型或修改行数决定。
+严重度不由文件类型或修改行数决定。
 
 ## 工作流
 

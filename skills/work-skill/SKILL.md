@@ -1,6 +1,6 @@
 ---
 name: work-skill
-description: Structure work tasks through four privacy-aware entry cards: intake, stuck, task closeout, and day/week closeout. Use when clarifying a work assignment, recording assumptions and unknowns, stopping an evidence-free debugging loop, closing a task with evidence, or preparing an unsent factual status draft without exposing sensitive work data.
+description: "Structure work tasks through four privacy-aware entry cards: intake, stuck, task closeout, and day/week closeout. Use when clarifying a work assignment, recording assumptions and unknowns, stopping an evidence-free debugging loop, closing a task with evidence, or preparing an unsent factual status draft without exposing sensitive work data."
 ---
 
 # Work Skill
@@ -32,6 +32,8 @@ description: Structure work tasks through four privacy-aware entry cards: intake
 - 允许必要的事实限定词和不确定性表达；删除无证据的自我评价，不删除影响判断所需的范围与风险。
 - 工作侧的 PR review、CI 和合并权限由团队既有流程提供；这个 Skill 只守个人负责的接任务、判据、执行记录和结账，不另造一套公司流程。
 
-## 当前验证边界
+## 状态
 
-四张入口卡只完成了虚构任务干跑，尚未通过“连续两周、至少十个真实任务、无人提醒也会主动使用”的复用判据。在进入第一个真实任务前只能称为尚未实测；开始真实试用后才能改为试用中。
+这个 skill 的当前状态由仓库 README 的「状态词」一节定义，本文件不复述——状态会变，写在两处必然有一处陈旧。
+
+只有一件事写在这里不会过期：四张入口卡从未在真实工作流里被调用过，它们的形状只经过虚构任务干跑。任何「这套流程验证过」的说法都不适用于它。

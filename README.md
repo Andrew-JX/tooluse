@@ -1,6 +1,6 @@
 # Tooluse Skills
 
-这是一组把验收、执行、审查、自有服务器部署、项目文档体系和工作结账写成可复用规则的 Skills。它们约束证据怎么产生、怎样冻结、由谁裁决，也把真实部署中重复出现的安全边界整理成清单；不替代产品判断、团队权限或真实用户验收。六个 Skill 全部从本仓库安装。
+这是一组把验收、执行、审查、自有服务器部署、项目文档体系、工作结账，以及思考方法选型与自我认识访谈写成可复用规则的 Skills。它们约束证据怎么产生、怎样冻结、由谁裁决，也把真实部署中重复出现的安全边界整理成清单；不替代产品判断、团队权限或真实用户验收。八个 Skill 全部从本仓库安装。
 
 ## 这是什么
 
@@ -10,8 +10,10 @@
 - `deploy-to-self-managed-server`：用专用密钥、强制命令、固定主机密钥、严格发布标识、内容校验、原子切换、回滚、凭据隔离和版本健康检查九条判据审查自有服务器发布。
 - `project-doc-system`：从零建起文档骨架，按触发条件生长，用路由式索引控制上下文成本，并给可判定的不变量配带负向控制的门禁。
 - `work-skill`：用接任务、卡住、任务收尾、日终周终四个入口整理脱敏的工作事实。**（已冻结，见「状态词」一节）**
+- `thinking-toolkit`：按用户卡在问题层、理解层、可信层、方案层还是抉择层，从十个思考方法里选定一个，并把结论收口到适用条件与可执行的第一步。
+- `life-design-interview`：用长程多轮追问把散落经历拼成《个人天赋使用说明书》或《个人人生设计蓝图》，带明确的心理负荷边界。
 
-六个 Skill 可从本仓库安装到用户级或项目级 Skills 目录。不支持 Skills 时，审查角色使用 `evidence-led-reviewer/assets/reviewer-role-prompt.md`，其余流程直接使用对应 `SKILL.md`。`work-skill` 的唯一源码自 2026-08-17 起回到本仓库；它只含不涉及任何组织信息的方法论，工作侧的私人运行记忆（术语索引、找人导航一类）留在工作机本地，不进任何 Git。
+八个 Skill 可从本仓库安装到用户级或项目级 Skills 目录。不支持 Skills 时，审查角色使用 `evidence-led-reviewer/assets/reviewer-role-prompt.md`，其余流程直接使用对应 `SKILL.md`。`work-skill` 的唯一源码自 2026-08-17 起回到本仓库；它只含不涉及任何组织信息的方法论，工作侧的私人运行记忆（术语索引、找人导航一类）留在工作机本地，不进任何 Git。
 
 拆分前记录的 contract SHA（包括 `dd56ff6`、`3acdf0d`、`4b8a1b8`、`f3129ba`）指向 `Andrew-JX/mj-portfolio` 的历史；本仓库经过 subtree 重写后的 SHA 与它们不对应。
 
@@ -24,7 +26,9 @@
 - **已卸载**：安装或试用过，之后已从当前环境移除。
 - **尚未实测**：只有资料核对、结构检查或虚构干跑，没有真实批次证据。
 
-截至 2026-08-22，`acceptance-author`、`evidence-bound-executor`、`evidence-led-reviewer` 三个是**正在使用**；`deploy-to-self-managed-server`、`project-doc-system` 两个是**尚未实测**；`work-skill` 是**冻结**。六个 Skill 现在全部从本仓库安装；存放位置变化不构成真实使用证据。
+截至 2026-08-25，`acceptance-author`、`evidence-bound-executor`、`evidence-led-reviewer` 三个是**正在使用**；`deploy-to-self-managed-server`、`project-doc-system`、`thinking-toolkit`、`life-design-interview` 四个是**尚未实测**；`work-skill` 是**冻结**。八个 Skill 现在全部从本仓库安装；存放位置变化不构成真实使用证据。
+
+`thinking-toolkit` 与 `life-design-interview` 于 2026-08-25 新增，尚无任何真实调用。它们和其余六个不同源：规则不是从本人事故里长出来的，而是把一组外部方法整理成路由与边界，因此连「幸存者偏差」那条部分缓解也不适用——它们的失效样本一个都还没有。`life-design-interview` 的 `references/life-design.md` 有一节标〔补写〕，是原始材料缺页后按同一框架补的，不是原文。
 
 三个交付 Skill 已在 `family-finance` 的 1B、2A、2B 真实批次形成完整证据链：历史会话归档能定位到各自 `SKILL.md` 的读取、紧随其后的合同冻结 / 候选实施 / 独立复核动作，以及对应合同和 candidate。三批分别经历 1、6、1 轮审查退回，判据回退均为 0；2B 真实拦下了「浏览器断言全过，但 Windows 根命令因进程清理超时退出 1」的假绿灯。这不是根据方法相似性倒推。`deploy-to-self-managed-server` 的安全判据来自两个真实部署，但清单式 Skill 尚未在下一项目触发，不能把底层机制证据冒充为 Skill 的复用与触发证据。`project-doc-system` 的脚手架、索引门禁与负向控制已在隔离临时项目跑通，并对两个真实项目做过只读探测，但没有任何项目按它建起过文档体系。
 
