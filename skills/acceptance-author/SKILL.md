@@ -5,7 +5,7 @@ description: Write and freeze acceptance criteria before implementation starts, 
 
 # Acceptance Author
 
-判据是整条流程的单点。第⑥（执行）⑦（分级核验）⑧（CI 门）⑨（我裁决）四步全部以它为尺子，所以判据错了，下游四层会一致地给出绿灯并附上完整证据链。这份 skill 只做一件事：在开工前把判据写到能被证伪，然后冻结。输出语言跟随用户。
+判据是整条流程的单点。实施、核验、CI 门和最终裁决全部以它为尺子，所以判据错了，下游四层会一致地给出绿灯并附上完整证据链。这份 skill 只做一件事：在开工前把判据写到能被证伪，然后冻结。输出语言跟随用户。
 
 ## 冻结规则
 
@@ -13,7 +13,7 @@ description: Write and freeze acceptance criteria before implementation starts, 
 - 执行方发现判据有问题：停下报告，由规划者改写并进入下一轮，不自行调整。
 - 三锚点流程默认授权创建本地提交，但不授权 push。除非契约或用户明确禁止，本地 contract、baseline 与 candidate 提交是流程前提；push、merge、tag 和发布仍需单独授权。
 - 确实不能创建本地提交时，以契约文件的绝对路径和内容哈希共同替代 `contract SHA`，审查方必须重新计算并逐字比对；`baseline SHA` 仍取实现开始前的仓库提交。
-- 使用替代锚点时无法形成冻结 candidate，批次状态封顶为「⑥（执行）完成，未收口」，第⑦步（分级核验）只能给 `ADVISORY`，不得给 PASS。
+- 使用替代锚点时无法形成冻结 candidate，批次状态封顶为「实施完成，未收口」，独立核验只能给 `ADVISORY`，不得给 PASS。
 - 使用三个独立锚点：`contract SHA` 保存获批判据，`baseline SHA` 标记实现起点，`candidate SHA` 标记候选实现。先冻结前两个，再开始实现。
 - `candidate SHA` 必须能追溯到已批准的 contract；它若改动契约文件，原批准自动失效，退回重新冻结。只存在于对话里的判据等于没有判据。
 

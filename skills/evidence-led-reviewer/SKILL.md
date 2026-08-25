@@ -10,7 +10,7 @@ description: Evidence-led engineering review for code changes, release candidate
 ## 前置条件与结论级别
 
 - 正式审查必须同时拿到 `contract SHA`、`baseline SHA`、`candidate SHA`。candidate 应建立在获批 baseline 之后，契约不能第一次和实现在 candidate 中同时出现。
-- candidate 若改动契约文件，原批准自动失效：停止实现审查，结论为「退回⑤（建任务与验收判据）重新冻结契约」，不得沿用旧判据给 PASS。
+- candidate 若改动契约文件，原批准自动失效：停止实现审查，结论为「退回重新冻结契约」，不得沿用旧判据给 PASS。
 - 只有浮动工作区时可以预审，但输出必须标 `ADVISORY`；不得给 PASS、发布结论或判定实现违约。
 - 契约缺失或存在多个冲突版本时结论为 `UNREVIEWABLE`。曾经发生过：审查方拿磁盘旧契约，把用户明确授权的改动判成违约。
 
@@ -22,7 +22,7 @@ description: Evidence-led engineering review for code changes, release candidate
 - 「本周 / 最近 / 该用户 / 前 N 条」这类限定词，能追到它在运行时的来源吗？
 - 这条判据当初是为了保护什么属性？那个属性现在还成立吗？（字面达成、理由落空是最贵的一类）
 
-判据本身错不进入 P0–P3。流程结论直接是「退回⑤（建任务与验收判据）重新冻结契约」；若错误已经造成真实产品影响，再对那个影响单独定级。
+判据本身错不进入 P0–P3。流程结论直接是「退回重新冻结契约」；若错误已经造成真实产品影响，再对那个影响单独定级。
 
 ## 审查契约
 
@@ -97,7 +97,7 @@ description: Evidence-led engineering review for code changes, release candidate
 ```
 审查轮次：第 N 轮
 本轮 findings：（逐条编号 F1、F2…，编号在整个批次内唯一，不跨轮复用）
-上一轮 findings 逐条结账：（已关闭 / 仍未关闭 / 判据本身有误已退回⑤（重新冻结契约），各附证据）
+上一轮 findings 逐条结账：（已关闭 / 仍未关闭 / 判据本身有误已退回重新冻结，各附证据）
 本批累计：审查退回 _ 轮 / 判据回退 _ 轮
 ```
 
