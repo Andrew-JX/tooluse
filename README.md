@@ -109,7 +109,7 @@
 
 ## 许可证
 
-自建内容采用 **MIT**（见 [LICENSE](LICENSE)）——可自由复制、修改、再分发，保留版权与许可声明即可。
+自建内容采用 **MIT**（见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)）——可自由复制、修改、再分发，保留版权与许可声明即可。
 
 **第三方逐字副本不在其内**，各自适用上游许可证：`skills/` 下带 `SOURCE.md` 的四个目录（`diagnosing-bugs`、`grilling` 为 MIT；`codex-cli`、`worktree-pr` 为 Apache-2.0），以及 `scripts/vendor/`（Apache-2.0，Anthropic）。逐条出处、钉住 SHA 与许可证全文见 [skills/THIRD-PARTY.md](skills/THIRD-PARTY.md)。
 

@@ -1,0 +1,21 @@
+# NOTICE
+
+[LICENSE](LICENSE)（MIT，Copyright (c) 2026 Andrew-JX）**只覆盖本仓库自建的内容**。
+
+以下是第三方逐字副本，各自适用上游许可证，**不受 LICENSE 约束**：
+
+| 位置 | 上游 | 许可证 |
+|---|---|---|
+| `skills/diagnosing-bugs/` | mattpocock/skills | MIT |
+| `skills/grilling/` | mattpocock/skills | MIT |
+| `skills/codex-cli/` | scarletkc/agents | Apache-2.0 |
+| `skills/worktree-pr/` | scarletkc/agents | Apache-2.0 |
+| `scripts/vendor/` | anthropics/skills | Apache-2.0 |
+
+判别方法：**目录内有 `SOURCE.md` 的就是第三方副本**，其中记录了上游仓库、
+路径、钉住的 SHA 与许可证。逐条清单与许可证全文见
+[skills/THIRD-PARTY.md](skills/THIRD-PARTY.md)。
+
+These directories are verbatim third-party copies governed by their own
+upstream licenses, not by LICENSE. A directory containing SOURCE.md is a
+third-party copy; see skills/THIRD-PARTY.md for pinned SHAs and full texts.

@@ -19,19 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-本许可证**只覆盖本仓库自建的内容**。
-
-以下目录是第三方逐字副本，各自适用上游许可证，不受本文件约束：
-
-- `skills/` 下带 `SOURCE.md` 的目录（`diagnosing-bugs`、`grilling`、
-  `codex-cli`、`worktree-pr`）
-- `scripts/vendor/`
-
-逐条出处、钉住的 SHA 与许可证全文见 `skills/THIRD-PARTY.md`。
-
-This license covers only the original content of this repository. Directories
-containing a SOURCE.md file, and scripts/vendor/, are verbatim third-party
-copies governed by their own upstream licenses; see skills/THIRD-PARTY.md.

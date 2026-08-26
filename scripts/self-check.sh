@@ -106,9 +106,13 @@ if [ -d scripts/vendor ]; then
   grep -q 'quick_validate.py' skills/THIRD-PARTY.md 2>/dev/null || note "scripts/vendor 未登记进 THIRD-PARTY.md"
 fi
 
-echo "⑨ 顶层许可证存在，且划清了第三方边界"
+echo "⑨ 顶层许可证与 NOTICE 划清了第三方边界"
+# LICENSE 保持纯 MIT 正文——夹杂其它内容会让 GitHub 识别成 NOASSERTION，
+# 第三方边界声明因此单独放 NOTICE。
 [ -f LICENSE ] || note "缺顶层 LICENSE——自建内容默认不授予任何再分发许可"
-grep -q 'SOURCE.md' LICENSE 2>/dev/null || note "LICENSE 没有声明第三方副本不在其覆盖范围内"
+grep -q 'Permission is hereby granted' LICENSE 2>/dev/null || note "LICENSE 不是可识别的 MIT 正文"
+[ -f NOTICE ] || note "缺 NOTICE——没有任何地方声明第三方副本不受 LICENSE 约束"
+grep -q 'SOURCE.md' NOTICE 2>/dev/null || note "NOTICE 没有给出第三方副本的判别方法"
 grep -q 'THIRD-PARTY.md' README.md 2>/dev/null || note "README 没有指向第三方许可证清单"
 
 echo
