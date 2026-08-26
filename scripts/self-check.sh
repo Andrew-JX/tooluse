@@ -73,9 +73,14 @@ echo "⑦ 仓库内相对链接必须可落地"
 python3 - <<'PY' || fail=1
 import os,re,glob,sys
 bad=[]
+def strip_code(t):
+    # 文档里讨论 markdown 语法时会出现链接写法，那不是链接。
+    t=re.sub(r'```.*?```', '', t, flags=re.S)     # 围栏代码块
+    t=re.sub(r'`[^`\n]*`', '', t)                 # 行内代码
+    return t
 for f in [x for x in glob.glob('**/*.md',recursive=True) if '.git' not in x]:
     d=os.path.dirname(f) or '.'
-    for m in re.finditer(r'\]\((?!https?:|mailto:|#)([^)]+)\)', open(f,encoding='utf-8').read()):
+    for m in re.finditer(r'\]\((?!https?:|mailto:|#)([^)]+)\)', strip_code(open(f,encoding='utf-8').read())):
         t=m.group(1).split('#')[0].strip()
         t=re.split(r'\s+["\']', t)[0].strip()      # 剥掉 [a](f.md "标题") 的 title
         if t and not os.path.exists(os.path.normpath(os.path.join(d,t))):
