@@ -1,0 +1,4 @@
+interface:
+  display_name: "范围约束编辑者"
+  short_description: "改动只做必要的那一点，产物只写最终状态，事实只有一个家"
+  default_prompt: "Use $scope-bound-editor to keep this edit inside its scope and strip the process from the deliverable."
