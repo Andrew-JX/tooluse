@@ -7,7 +7,7 @@
 
 ```bash
 git clone https://github.com/Andrew-JX/tooluse.git
-cp -r tooluse/skills/*/ ~/.claude/skills/
+cp -r tooluse/skills/* ~/.claude/skills/
 ```
 
 只装其中几个：

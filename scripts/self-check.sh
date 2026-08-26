@@ -62,7 +62,8 @@ for d in skills/*/ scripts/vendor/; do
   n=$(basename "$d")
   [ "$n" = vendor ] || is_vendored "$n" || continue
   [ -f "${d}SOURCE.md" ] || continue
-  dirty=$(git status --porcelain -- "$d" 2>/dev/null | grep -v "SOURCE.md" | wc -l | tr -d ' ')
+  # SOURCE.md 与许可证全文由本仓库管理，不算 vendored 内容
+  dirty=$(git status --porcelain -- "$d" 2>/dev/null | grep -vE "SOURCE\.md|LICENSE|NOTICE" | wc -l | tr -d ' ')
   [ "$dirty" -eq 0 ] || note "第三方 $n 有 $dirty 个未提交改动（内容文件本地不编辑）"
 done
 
@@ -72,7 +73,7 @@ if [ "$(git rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
 else
   for d in skills/*/; do
     n=$(basename "$d"); is_vendored "$n" || continue
-    c=$(git log --format=%H -- "$d" ":(exclude)${d}SOURCE.md" | wc -l | tr -d ' ')
+    c=$(git log --format=%H -- "$d" ":(exclude)${d}SOURCE.md" ":(exclude)${d}LICENSE*" ":(exclude)${d}NOTICE*" | wc -l | tr -d ' ')
     [ "$c" -le 1 ] || note "第三方 $n 的内容文件有 $c 次提交（合法跟进上游请在此放宽并记账本）"
   done
 fi
@@ -101,7 +102,7 @@ echo "⑧ scripts/vendor 的第三方出处完整"
 if [ -d scripts/vendor ]; then
   [ -f scripts/vendor/SOURCE.md ] || note "scripts/vendor 缺 SOURCE.md"
   grep -qE '`[0-9a-f]{40}`' scripts/vendor/SOURCE.md 2>/dev/null || note "scripts/vendor/SOURCE.md 没有 40 位 SHA"
-  ls scripts/vendor/LICENSE-* >/dev/null 2>&1 || note "scripts/vendor 缺许可证全文"
+  ls licenses/LICENSE-anthropics-skills.txt >/dev/null 2>&1 || note "缺 anthropics 许可证全文"
   grep -q 'scripts/vendor' NOTICE 2>/dev/null || note "scripts/vendor 未登记进 NOTICE"
 fi
 

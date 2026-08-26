@@ -14,10 +14,10 @@
 
 判别方法：**目录内有 `SOURCE.md` 的就是第三方副本**，其中记录了上游仓库、
 路径、钉住的 SHA 与许可证。许可证全文：
-[MIT (mattpocock)](skills/LICENSE-mattpocock-skills) ·
-[Apache-2.0 (scarletkc)](skills/LICENSE-scarletkc-agents) ·
-[NOTICE (scarletkc)](skills/NOTICE-scarletkc-agents) ·
-[Apache-2.0 (Anthropic)](scripts/vendor/LICENSE-anthropics-skills.txt)
+[MIT (mattpocock)](licenses/LICENSE-mattpocock-skills) ·
+[Apache-2.0 (scarletkc)](licenses/LICENSE-scarletkc-agents) ·
+[NOTICE (scarletkc)](licenses/NOTICE-scarletkc-agents) ·
+[Apache-2.0 (Anthropic)](licenses/LICENSE-anthropics-skills.txt)
 
 **不做上游保鲜。** 这些是提示词文本，不是会失效的代码；钉住的版本能用就一直能用。
 上游前进不是本地缺陷，想跟进就手动重新取回并更新对应 `SOURCE.md`。
