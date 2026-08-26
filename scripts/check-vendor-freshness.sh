@@ -6,6 +6,7 @@
 # 只报告，不自动更新——跟不跟是判断，不是自动动作。
 #
 # 已知边界：只比对本地已有的文件。上游新增了文件而本地没有，这里看不见。
+# 覆盖范围：skills/*/ 与 scripts/vendor/，凡带 SOURCE.md 的目录。
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
@@ -15,7 +16,7 @@ fetch() { # repo sha relpath outfile -> 0 ok / 1 fail
   curl -sf --max-time 20 "https://raw.githubusercontent.com/$1/$2/$3" -o "$4"
 }
 
-for d in skills/*/; do
+for d in skills/*/ scripts/vendor/; do
   src="${d}SOURCE.md"
   [ -f "$src" ] || continue
   name=$(basename "$d")
@@ -31,6 +32,7 @@ for d in skills/*/; do
   # 目录内除 SOURCE.md 外的全部文件都要比对，不只 SKILL.md
   while IFS= read -r f; do
     rel="${f#"$d"}"
+    case "$rel" in LICENSE-*) continue;; esac  # 许可证全文另有出处，不逐字比
     checked=$((checked+1))
     tmp=$(mktemp)
     if ! fetch "$repo" "$pin" "$upath/$rel" "$tmp"; then

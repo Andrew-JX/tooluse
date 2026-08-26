@@ -19,6 +19,18 @@
 
 全部取回于 2026-08-25。每个目录内的 `SOURCE.md` 是该副本的权威记录，上表是汇总。
 
+### 非 Skill 的第三方文件
+
+| 文件 | 上游 | 路径 | 钉住 SHA | 许可证 |
+|---|---|---|---|---|
+| `scripts/vendor/quick_validate.py` | anthropics/skills | `skills/skill-creator/scripts` | `3b3fad96af16` | Apache-2.0 |
+
+官方 Skill 结构 validator，2026-08-26 收录。`scripts/self-check.sh` 第 ② 条用它。
+**收它的唯一理由是 CI**：此前那一步只在装了 skill-creator 的机器上生效，CI 上一直显示「未找到，跳过」——一条只在作者本机生效的门禁等于没有门禁。它抓到过 `grill-me` 的非法 frontmatter 字段。
+许可证全文见 [../scripts/vendor/LICENSE-anthropics-skills.txt](../scripts/vendor/LICENSE-anthropics-skills.txt)（Copyright 2026 Anthropic, PBC）。
+
+**注意**：`anthropics/skills` 仓库根目录没有 LICENSE，GitHub 的许可证字段为空；Apache-2.0 声明在 `skills/skill-creator/LICENSE.txt`，作用域是该 Skill 目录。收录范围因此严格限制在这一个目录内。
+
 | 上游 | 版权 | 许可证全文 |
 |---|---|---|
 | [mattpocock/skills](https://github.com/mattpocock/skills) | Copyright (c) 2026 Matt Pocock | [LICENSE-mattpocock-skills](LICENSE-mattpocock-skills) |

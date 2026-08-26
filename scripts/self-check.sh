@@ -10,6 +10,7 @@ note(){ echo "  ✗ $1"; fail=1; }
 
 # 第三方判据：目录内是否存在 THIRD-PARTY.md 登记，而不是「有没有 SOURCE.md」——
 # 用后者会导致「删掉 SOURCE.md 就不再被检查」。
+# 只认表格行，不认正文提及——正文里也会提到自建 Skill 的名字
 is_vendored(){ grep -qE "^\| \`$1\`" skills/THIRD-PARTY.md 2>/dev/null; }
 
 echo "① frontmatter name 与目录名一致"
@@ -21,13 +22,17 @@ for d in skills/*/; do
 done
 
 echo "② 官方 validator（quick_validate.py）"
+# 优先用仓库内 vendored 的那份：门禁只在作者本机生效等于没有门禁
 V=""
-for c in "$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py" \
+for c in "scripts/vendor/quick_validate.py" \
+         "$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py" \
          "$HOME/.claude/skills/.system/skill-creator/scripts/quick_validate.py"; do
   [ -f "$c" ] && V="$c" && break
 done
 if [ -z "$V" ]; then
-  echo "  – 本机未找到 validator，跳过（不计为通过）"
+  note "未找到 validator——本仓库已 vendored 一份，找不到说明文件缺失"
+elif ! python3 -c "import yaml" 2>/dev/null; then
+  echo "  – 缺 PyYAML，跳过（不计为通过）"
 else
   for d in skills/*/; do
     [ -f "${d}SKILL.md" ] || continue
@@ -88,6 +93,14 @@ for f in [x for x in glob.glob('**/*.md',recursive=True) if '.git' not in x]:
 for b in bad: print(f"  ✗ 断链 {b}")
 sys.exit(1 if bad else 0)
 PY
+
+echo "⑧ scripts/vendor 的第三方出处完整"
+if [ -d scripts/vendor ]; then
+  [ -f scripts/vendor/SOURCE.md ] || note "scripts/vendor 缺 SOURCE.md"
+  grep -qE '`[0-9a-f]{40}`' scripts/vendor/SOURCE.md 2>/dev/null || note "scripts/vendor/SOURCE.md 没有 40 位 SHA"
+  ls scripts/vendor/LICENSE-* >/dev/null 2>&1 || note "scripts/vendor 缺许可证全文"
+  grep -q 'quick_validate.py' skills/THIRD-PARTY.md 2>/dev/null || note "scripts/vendor 未登记进 THIRD-PARTY.md"
+fi
 
 [ $fail -eq 0 ] && { echo; echo "全部通过。"; } || { echo; echo "有失败项。"; }
 exit $fail
