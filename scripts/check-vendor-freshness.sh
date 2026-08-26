@@ -6,6 +6,8 @@
 # 只报告，不自动更新——跟不跟是判断，不是自动动作。
 #
 # 已知边界：只比对本地已有的文件。上游新增了文件而本地没有，这里看不见。
+# 注意：变量后紧跟中文标点时必须写 ${var}——UTF-8 locale 下 bash 会把多字节字符的
+# 首字节吞进变量名，配合 set -u 直接崩。C locale 不会，所以这类 bug 极易被环境藏住。
 # 覆盖范围：skills/*/ 与 scripts/vendor/，凡带 SOURCE.md 的目录。
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -62,7 +64,7 @@ for d in skills/*/ scripts/vendor/; do
 done
 
 echo
-echo "比对 $checked 个文件：本地漂移 $drift，上游已更新 $moved，未知 $unknown"
+echo "比对 ${checked} 个文件：本地漂移 ${drift}，上游已更新 ${moved}，未知 ${unknown}"
 if [ "$unknown" -gt 0 ]; then
   echo "有未知项——本次结果不构成「与上游一致」的证明。"
 fi

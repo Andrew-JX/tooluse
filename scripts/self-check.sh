@@ -6,7 +6,9 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 fail=0
+skipped=0
 note(){ echo "  ✗ $1"; fail=1; }
+skip(){ echo "  – $1"; skipped=$((skipped+1)); }
 
 # 第三方判据：目录内是否存在 THIRD-PARTY.md 登记，而不是「有没有 SOURCE.md」——
 # 用后者会导致「删掉 SOURCE.md 就不再被检查」。
@@ -32,7 +34,7 @@ done
 if [ -z "$V" ]; then
   note "未找到 validator——本仓库已 vendored 一份，找不到说明文件缺失"
 elif ! python3 -c "import yaml" 2>/dev/null; then
-  echo "  – 缺 PyYAML，跳过（不计为通过）"
+  skip "缺 PyYAML，validator 未运行"
 else
   for d in skills/*/; do
     [ -f "${d}SKILL.md" ] || continue
@@ -42,7 +44,7 @@ fi
 
 echo "③ THIRD-PARTY.md 登记的每一项都必须有完整出处"
 while IFS= read -r n; do
-  [ -d "skills/$n" ] || { note "THIRD-PARTY.md 登记了 $n，但目录不存在"; continue; }
+  [ -d "skills/$n" ] || { note "THIRD-PARTY.md 登记了 ${n}，但目录不存在"; continue; }
   s="skills/$n/SOURCE.md"
   [ -f "$s" ] || { note "$n 已登记为第三方，但缺 SOURCE.md"; continue; }
   grep -qE '`[0-9a-f]{40}`' "$s" || note "$n/SOURCE.md 没有 40 位 SHA"
@@ -57,15 +59,17 @@ for d in skills/*/; do
 done
 
 echo "⑤ 第三方内容文件不得有本地未提交改动"
-for d in skills/*/; do
-  n=$(basename "$d"); is_vendored "$n" || continue
+for d in skills/*/ scripts/vendor/; do
+  n=$(basename "$d")
+  [ "$n" = vendor ] || is_vendored "$n" || continue
+  [ -f "${d}SOURCE.md" ] || continue
   dirty=$(git status --porcelain -- "$d" 2>/dev/null | grep -v "SOURCE.md" | wc -l | tr -d ' ')
   [ "$dirty" -eq 0 ] || note "第三方 $n 有 $dirty 个未提交改动（内容文件本地不编辑）"
 done
 
 echo "⑥ 第三方内容文件历史上只应有收录那一次提交"
 if [ "$(git rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
-  echo "  – 浅克隆，git log 不完整，跳过（不计为通过）"
+  skip "浅克隆，git log 不完整，⑥ 未运行"
 else
   for d in skills/*/; do
     n=$(basename "$d"); is_vendored "$n" || continue
@@ -102,5 +106,13 @@ if [ -d scripts/vendor ]; then
   grep -q 'quick_validate.py' skills/THIRD-PARTY.md 2>/dev/null || note "scripts/vendor 未登记进 THIRD-PARTY.md"
 fi
 
-[ $fail -eq 0 ] && { echo; echo "全部通过。"; } || { echo; echo "有失败项。"; }
+echo
+if [ $fail -ne 0 ]; then
+  echo "有失败项。"
+elif [ $skipped -gt 0 ]; then
+  # 跳过和通过是两种结论，不许合并——和 freshness 的「未知≠一致」同一条规矩
+  echo "没有失败项，但有 ${skipped} 项被跳过——本次结果不构成「全部通过」的证明。"
+else
+  echo "全部通过。"
+fi
 exit $fail

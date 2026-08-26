@@ -1,6 +1,6 @@
 # 第三方 Skill — 逐字副本
 
-`grilling/` 与 `grill-me/` **不是本仓库写的**，是从上游按固定 SHA 取回的逐字副本。它们和自建 Skill 平铺在同一层，因为 Skill 发现只扫 `skills/` 的直接子目录——多套一层目录会让它们装不上。每个目录内的 `SOURCE.md` 标明出处。
+本目录下带 `SOURCE.md` 的四个 Skill **不是本仓库写的**，是从上游按固定 SHA 取回的逐字副本。它们和自建 Skill 平铺在同一层，因为 Skill 发现只扫 `skills/` 的直接子目录——多套一层目录会让它们装不上。每个目录内的 `SOURCE.md` 标明出处。
 
 ## 硬规矩：本地永不编辑
 
@@ -36,7 +36,7 @@
 | [mattpocock/skills](https://github.com/mattpocock/skills) | Copyright (c) 2026 Matt Pocock | [LICENSE-mattpocock-skills](LICENSE-mattpocock-skills) |
 | [scarletkc/agents](https://github.com/scarletkc/agents) | Copyright 2026 scarletkc | [LICENSE-scarletkc-agents](LICENSE-scarletkc-agents) · [NOTICE-scarletkc-agents](NOTICE-scarletkc-agents) |
 
-**`grill-me` 曾经收录，2026-08-26 移除。** 它是个 7 行转发壳，靠 `disable-model-invocation: true` 声明「模型不许自主调用，只能人手动喊」。但官方 `quick_validate.py` 的允许字段只有 `allowed-tools / description / license / metadata / name`——**这个字段不被支持，那道锁根本不存在**。于是它退化成一个 description 模糊、与 `grilling` 抢触发的多余节点。
+**`grill-me` 曾经收录，2026-08-26 移除。** 它是个 7 行转发壳，靠 `disable-model-invocation: true` 声明「模型不许自主调用，只能人手动喊」。但官方 `quick_validate.py` 的允许字段只有 `allowed-tools / compatibility / description / license / metadata / name`——**这个字段不被支持，那道锁根本不存在**。于是它退化成一个 description 模糊、与 `grilling` 抢触发的多余节点。
 
 移除不违反「本地永不编辑」：没有改它的内容，只是不再收录。**触发能力零损失**——`grilling` 自己的 description 明写 `or uses any 'grill' trigger phrases`，「grill me」这类说法本来就由它接。
 

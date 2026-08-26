@@ -15,6 +15,8 @@ permissions:
 jobs:
   self-check:
     runs-on: ubuntu-latest
+    env:
+      LC_ALL: en_US.UTF-8   # 本机 C locale 藏过一个 set -u 崩溃，CI 用 UTF-8 跑
     steps:
       - uses: actions/checkout@v4
         with:
