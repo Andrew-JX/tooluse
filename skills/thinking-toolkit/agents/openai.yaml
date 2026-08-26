@@ -1,0 +1,4 @@
+interface:
+  display_name: "思考方法路由"
+  short_description: "按用户卡在哪一层选定思考方法，先拆问题与事实，再收口到可执行的第一步"
+  default_prompt: "Use $thinking-toolkit to figure out which thinking method fits what I am stuck on, then run it."

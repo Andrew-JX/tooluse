@@ -1,0 +1,4 @@
+interface:
+  display_name: "天赋与人生设计访谈"
+  short_description: "多轮追问把散落经历拼成天赋说明书或人生设计蓝图，并收口到可试的原型"
+  default_prompt: "Use $life-design-interview to interview me and write up either my underlying talents or a life design blueprint."

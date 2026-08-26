@@ -10,7 +10,7 @@ description: Evidence-led engineering review for code changes, release candidate
 ## 前置条件与结论级别
 
 - 正式审查必须同时拿到 `contract SHA`、`baseline SHA`、`candidate SHA`。candidate 应建立在获批 baseline 之后，契约不能第一次和实现在 candidate 中同时出现。
-- candidate 若改动契约文件，原批准自动失效：停止实现审查，结论为「退回⑤重新冻结契约」，不得沿用旧判据给 PASS。
+- candidate 若改动契约文件，原批准自动失效：停止实现审查，结论为「退回重新冻结契约」，不得沿用旧判据给 PASS。
 - 只有浮动工作区时可以预审，但输出必须标 `ADVISORY`；不得给 PASS、发布结论或判定实现违约。
 - 契约缺失或存在多个冲突版本时结论为 `UNREVIEWABLE`。曾经发生过：审查方拿磁盘旧契约，把用户明确授权的改动判成违约。
 
@@ -22,7 +22,7 @@ description: Evidence-led engineering review for code changes, release candidate
 - 「本周 / 最近 / 该用户 / 前 N 条」这类限定词，能追到它在运行时的来源吗？
 - 这条判据当初是为了保护什么属性？那个属性现在还成立吗？（字面达成、理由落空是最贵的一类）
 
-判据本身错不进入 P0–P3。流程结论直接是「退回⑤重新冻结契约」；若错误已经造成真实产品影响，再对那个影响单独定级。
+判据本身错不进入 P0–P3。流程结论直接是「退回重新冻结契约」；若错误已经造成真实产品影响，再对那个影响单独定级。
 
 ## 审查契约
 
@@ -36,9 +36,9 @@ description: Evidence-led engineering review for code changes, release candidate
 
 ## 严重度
 
-开始审查时读取 [severity-model.md](references/severity-model.md)。如项目已有严重度政策，以项目政策为准，并在输出中说明映射。
+开始审查时读取 [severity-model.md](references/severity-model.md)。判定因子与它们的顺序在那里定义，本处不复述。如项目已有严重度政策，以项目政策为准，并在输出中说明映射。
 
-严重度由“当前影响 × 可达性 × 爆炸半径 × 可恢复性”决定，不由文件类型或修改行数决定。
+严重度不由文件类型或修改行数决定。
 
 ## 工作流
 
@@ -89,6 +89,21 @@ description: Evidence-led engineering review for code changes, release candidate
 - 是否允许提交、合并、部署或进入下一任务；
 - **最没把握的判断**：这次审查里我自己最可能看错的一处。
 - 本次真正触发过的规则：（skill 名 + 条目号。没触发的不要列，列了就失去意义）
+
+## 逐轮记录
+
+审查可能进行多轮。每一轮的输出都要带编号，并把上一轮逐条结账，否则「退回了几轮、每轮退回了什么」这个事实没有任何地方承载——它不在代码里，不在 commit message 里，事后无法重建。
+
+```
+审查轮次：第 N 轮
+本轮 findings：（逐条编号 F1、F2…，编号在整个批次内唯一，不跨轮复用）
+上一轮 findings 逐条结账：（已关闭 / 仍未关闭 / 判据本身有误已退回重新冻结，各附证据）
+本批累计：审查退回 _ 轮 / 判据回退 _ 轮
+```
+
+**声称关闭的条数必须逐条点名**，不读执行方的自述。「N 条已修」是全称声称，适用《工作流》第 3 条。
+
+判据回退（因判据本身写错而退回重新冻结）和审查退回（实现不达标而退回修改）分别计数，不合并——两者指向完全不同的问题，合并之后看不出是判据在错还是实现在错。
 
 没有 actionable finding 时不要虚构列表，直接陈述通过依据和剩余风险。
 

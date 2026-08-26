@@ -1,11 +1,13 @@
 ---
 name: deploy-to-self-managed-server
-description: Assess, design, and verify a secure GitHub Actions deployment from a repository to Tencent Cloud or another self-managed Ubuntu host. Use when Codex needs to replace manual deployment, review a forced-command SSH boundary, define atomic release and rollback criteria, protect server-only credentials, configure China-facing nginx/HTTPS/ICP requirements, or diagnose a failed deployment pipeline. Apply the portable security checklist to both static-artifact and full-stack deployments, but keep those implementation shapes separate.
+description: Assess, design, and verify a secure GitHub Actions deployment from a repository to a self-managed cloud host (Ubuntu; Tencent Cloud, Alibaba Cloud, or any VPS). Use when a push already auto-deploys the frontend through a managed platform such as Vercel but the self-managed service does not update with it, when replacing a manual deployment, reviewing a forced-command SSH boundary, defining atomic release and rollback criteria, protecting server-only credentials, configuring China-facing nginx/HTTPS/ICP requirements, or diagnosing a failed deployment pipeline. Apply the portable security checklist to both static-artifact and full-stack deployments, but keep those implementation shapes separate.
 ---
 
 # Deploy to Self-Managed Server
 
-Use a portable security checklist to review or design deployment. Do not assume that a static artifact pipeline, a full-stack checkout, or another project's scripts can be copied unchanged.
+Use a portable security checklist to review or design deployment. Do not assume that a static artifact pipeline, a full-stack checkout, or another project's scripts can be copied unchanged. Respond in the user's language.
+
+**The common trigger.** A managed platform (Vercel, Netlify, Cloudflare Pages) already redeploys the frontend on every push, so the site looks up to date — but the self-managed host behind it keeps serving the previous version, because nothing pushes to it. That gap is what this checklist closes. Confirm which half of the system the managed platform actually covers before designing anything.
 
 ## 1. Establish the boundary
 
