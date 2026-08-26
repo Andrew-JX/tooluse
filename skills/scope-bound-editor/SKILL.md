@@ -1,27 +1,61 @@
 ---
 name: scope-bound-editor
-description: Keep an edit inside its scope and keep the deliverable free of the process that made it. Use when modifying existing code, docs, or README rather than writing from scratch, when naming a commit, pull request, title, or exported artifact, when writing or changing any user-visible string such as CLI help, error text, or UI copy, when a behavior change means other copy sites now disagree, when deciding which page owns a fact, when a page is about to record a version or deployment state the code already owns, and when reviewing a diff that touches text or docs.
+description: Hold a change to the size the request defines, and keep the deliverable free of the process that made it. Use when modifying existing code, docs, or README rather than writing from scratch, when a diff starts touching neighboring surfaces, when a compatibility layer, migration, fallback, flag, abstraction, or parallel implementation may exceed the request, when naming a commit, pull request, title, or exported artifact, when writing or changing any user-visible string such as CLI help, error text, or UI copy, when a behavior change means other copy sites now disagree, when deciding which page owns a fact, when a page is about to record a version or deployment state the code already owns, and when reviewing a diff that touches text or docs.
 ---
 
 # Scope-Bound Editor
 
-`evidence-bound-executor` 被证据约束，这个被**范围**约束。它管的是同一件事的另一半：不是「你说完成有没有证据」，是「你改的东西有没有超出该改的范围，产物里有没有混进不该出现的东西」。输出语言跟随用户。
+`evidence-bound-executor` 被证据约束，这个被**范围**约束。两部分：**A 管改动的边界**（改多大），**B 管产物的内容**（写什么进去）。输出语言跟随用户。
 
-**它常驻，不挑批次。** 三个交付 Skill 属于加码包，按影响开；这五条的成本接近零，任何一次改动都适用。它填的正是「低影响日常改动」那一格——那一格是刻意不设防的，代价就是下面这五类事故。
+**它常驻，不挑批次。** 三个交付 Skill 属于加码包，按影响开；这些规则的成本接近零，任何一次改动都适用。它填的正是「低影响日常改动」那一格——那一格是刻意不设防的，代价就是下面这些事故。
 
-## 1. 最小充分改动
+---
 
-**只改必要的那一点，不重写邻近的段落。**
+# A · 改动的边界
 
-保留没受影响的措辞、结构和原有理由。删真正的重复可以，但不要顺手重写旁边的散文，也不要在没有理由的情况下把有用的区分压掉。
+**一个改动只有一个正确的大小，而请求定义了它。做多和做少是同一种失败**——边界从来没被定位过。它们只是败法不同：多做的部分在复核或线上暴露，少做的部分由用户来发现。
 
-- 反例：把一处「必须」改成「可选」，顺手重构了周围好几节，然后矫枉过正删掉了有用的上下文。**几处局部修改就够了。**
-- 自检：**能逐处说出这个改动对应哪条要求吗？** 说不出来的那处就是溢出。
-- 插入新内容前先看相邻段落挂在什么上面。反例：新一节插进了参数表和它的输出格式脚注之间，脚注被孤立到了错误的章节里。
+**先定位边界，然后界内穷尽、界外不动。**
 
-`evidence-bound-executor` 有「范围外发现记成新任务，不顺手做」，但那条只在冻结批次里生效。**这条不需要批次。**
+## A1. 界外：不要越
 
-## 2. 产物只写最终状态
+- **只改请求点名的那些面。** 请求点了哪一层，就是关于那一层的请求，相邻层即使看起来不对也不动。**把发现报告出来，而不是顺手修掉**——一条单独的观察很便宜，一个纠缠在一起的 diff 不便宜。
+  - 反例：让把后端接口适配到现成的注册表单，执行方顺手把表单也重新设计了，复核方得先把两件事拆开，哪一件才能发布。
+  - 反例：改一处「必须」为「可选」，顺手重构了周围好几节，然后矫枉过正删掉了有用的上下文。**几处局部修改就够了。**
+  - 自检：**能逐处说出这个改动对应哪条要求吗？** 说不出来的那处就是溢出。
+
+- **兼容是成本，而且必须已经有人在付。** 迁移、双读路径、废弃别名、版本垫片，只有在真实用户持有旧状态时才是对的。**先确认那些用户存在，再写。** 不存在时，直接断掉才是更小的改动。这是事实问题，不是谨慎问题。
+  - 反例：一个尚未发布、没有任何存量用户的产品，为从来没人写过的数据加了存档格式迁移路径，那条死分支此后还要一直维护和测试。
+
+- **复用现有实现，绝不在旁边再写一个。** 项目已经在渲染这个面板、格式化这条消息、发放这个奖励，就扩展那条路径。**一个看起来正确的并行实现比一个明显的缺口更糟，因为它会静默分叉，而分叉的时候什么都不会失败。**
+  - 反例：新的活动横幅在现有升级横幅旁边从头写了一个；一个版本之后，只有其中一个有新动画。
+
+- **改现有规则，而不是在它旁边加一条新的。** 新常量、新开关、新分支和它本来要取代的规则并存，就留下两个真值来源，要推理的状态数翻倍。
+  - 反例：「把升级限制到单一分支」的请求被实现成新增第二个规则常量；而把原常量的含义收窄，就是这个改动的全部。
+
+- **解决被提出的那个问题，不解决它的一般形式。** 扩展点、插件层、配置面，值得建的前提是**第二个调用方已经存在**，不是想象出一个。除非请求要的就是通用版，否则简单实现就是交付物。
+
+## A2. 界内：要穷尽
+
+- **改动要落到它蕴含的每一处。** 单位是「被请求的行为」，不是「你恰好打开的那个文件」。宣布完成之前，**去搜你改的那个东西的兄弟**——同类的其他卡片、同一个 key 的其他语言文案、同一个 helper 的其他调用方——逐个确认它要么改了，要么确实不该改。
+  - 反例：新卡片类型上线时漏了每种卡片标签都带的分类前缀，在界面上读起来像另一种东西。
+
+- **对齐同类的既有约定属于请求本身，不算额外范围。** 一个已有类别的新条目，天然继承那个类别的必填字段、命名约定、分级元数据和文案惯例，不需要专门交代。取值确实未定时才问，**不要带着缺字段发出去**。
+  - 反例：新实体落地时少了每个同类都声明的 rarity 字段，直到一个按 rarity 分组的 loader 静默丢掉了它才暴露。
+
+## A3. 边界不清时
+
+**只为有后果的边界决定提问。** 如果不做一个用户尚未做过的、有后果的选择就无法确定边界，那就先问再越界。**日常实现决定留给执行方，不许变成确认关卡**——每处都问会让流程重到被绕过去。
+
+## A4. 顺序：逻辑定了再钉测试
+
+每个行为改动仍然要带正常路径和失败路径的覆盖，**这条管的是顺序**。对着还在讨论中的逻辑写测试和文档，会把错的行为钉住，然后反过来为它辩护，重写的代价比等一等更大。**先把逻辑确认下来，再覆盖它。**
+
+---
+
+# B · 产物的内容
+
+## B1. 只写最终状态
 
 交付物是给**没在场的人**读的。只在那场对话的语境下才成立的东西——被否掉的方案、被纠正的范围、十分钟前的一句叮嘱——轻则是噪音，重则被读成对产品的声明。
 
@@ -30,15 +64,16 @@ description: Keep an edit inside its scope and keep the deliverable free of the 
 - 「不带批量下载面板」不成立——没有人预期过有这个面板。
 - 「这里不能用 `json.dumps`，签名校验要求保持键序」成立。
 
-具体到几个位置：
+**边界被中途纠正时，结果要读起来像纠正后的范围从一开始就是唯一的那个。** 一个还让废弃方案活着的标题、注释或理由，等于把纠正刚刚移除的那部分溢出又搬了回来，而读者要为它付两次账。
 
-- **标题、提交信息、导出文件名只写做成了什么，不写差点做成什么。** 反例：用户要番茄炒蛋，执行方加了红烧肉，用户说不要，最终产物叫「番茄炒蛋-不要红烧肉版」——**每个读者都得先理解一道从不存在的菜，才能理解那道存在的。** 同一形状的真实案例：PR 标题 `Add export button (without the bulk-download panel)`。
+- **标题、提交信息、导出文件名只写做成了什么，不写差点做成什么。**
+  - 反例：用户要番茄炒蛋，执行方加了红烧肉，用户说不要，最终产物叫「番茄炒蛋-不要红烧肉版」——**每个读者都得先理解一道从不存在的菜，才能理解那道存在的。** 同形状的真实案例：PR 标题 `Add export button (without the bulk-download panel)`。
 - **注释只写非显然的理由。** 值得占行的是下一个读者从代码里恢复不出来的约束：顺序要求、上游 bug、平台怪癖。「为什么不用 X」只在 X 是读者本来就会伸手去拿的东西时才算数，**而不是这场对话恰好试过又扔掉的东西**。
 - **交付物不自述生产过程。** 生成的报告、导出、页面承载结论和数值，不承载方法论自辩和下一步计划。「本页演示了」「我们也可以」是生产者的口吻漏进了产品。窄例外：本来就是帮助文案的，以及明确被要求记录自身方法的文档（审查报告、交接文档属于此）。
 
 废弃方案有自己的家：**git history、PR 正文、给提问者的那条回复。** 它们已经保存了，产物不必再存一份。
 
-## 3. 一个事实一个家
+## B2. 一个事实一个家
 
 一起变化的细节（字段清单、优先级链、支持的取值、状态）**只住在一个文档里**，其他地方一律链接过去。
 
@@ -47,7 +82,7 @@ description: Keep an edit inside its scope and keep the deliverable free of the 
 - **指针要落地。** 指向一个具体文件加一个可搜索的符号、函数、数据键或标题；「见源码」和指向仓库根目录等于让读者自己重新推导。
 - 反例：同一份七字段白名单粘进五个文档；同一套状态词存在于三处可独立编辑的位置，其中一处已经陈旧而没有任何东西会因此失败。
 
-## 4. 不快照跑得比文档快的值
+## B3. 不快照跑得比文档快的值
 
 文档按人的节奏改，有些事实按每次提交、每次部署、每次重启的节奏变。把后者写进长寿页面**不是维护负担，是延时生效的缺陷**：页面会自己变错，而且错的时候什么都不会失败。
 
@@ -59,7 +94,7 @@ description: Keep an edit inside its scope and keep the deliverable free of the 
 - 真要展示当前值，**从权威来源在构建时生成**，不要手工维护第二份。
 - 反例：runbook 开头写「生产当前运行 2.3.1」，四个版本之后有人照着它翻了错版本的变更记录。
 
-## 5. 行为改了，抄写点要扫一遍
+## B4. 行为改了，抄写点要扫一遍
 
 **一次行为改动，在它的所有抄写点达成一致之前都没有做完。** 拿旧措辞去搜，按容易被忘的程度排序。
 
@@ -75,12 +110,16 @@ description: Keep an edit inside its scope and keep the deliverable free of the 
 
 扫完再解一遍链接：**改过的标题会打断所有指向它的锚点，移动过的文件会打断所有相对路径，而这两件事在正常测试里都不报错。**
 
+---
+
 ## 什么时候不用
 
-从零新建一个文件时，第 1 条不适用——没有需要保留的邻近内容。其余四条仍然适用。
+从零新建一个文件时，A1 的「只改点名的面」和 B 的「最小改动」性质的约束不适用——没有需要保留的邻近内容。其余规则仍然适用。
 
-纯机器格式的输出（porcelain、TSV、JSON）不适用第 2 条的措辞建议，它们是契约：**不增加任何装饰、提示或注解，说明性文字走 stderr 或人类可读那条路径。缺席也是契约的一部分**，所以要写反向断言。
+纯机器格式的输出（porcelain、TSV、JSON）不适用 B1 的措辞建议，它们是契约：**不增加任何装饰、提示或注解，说明性文字走 stderr 或人类可读那条路径。缺席也是契约的一部分**，所以要写反向断言。
 
 ## 出处
 
-第 2–5 条的形状参考了 [scarletkc/agents 的 `ux-writing`](https://github.com/scarletkc/agents/blob/main/skills/ux-writing/SKILL.md)（Apache-2.0），本文件是按本仓库的事故重写的，不是它的复制或翻译。第 1 条和第 5 条的项目形状清单来自本人事故。
+A 部分的规则形状来自 [`scoped-change`](https://github.com/scarletkc/agents/blob/main/skills/scoped-change/SKILL.md)，B 部分来自 [`ux-writing`](https://github.com/scarletkc/agents/blob/main/skills/ux-writing/SKILL.md)，两者均为 scarletkc 所作、Apache-2.0 许可。**本文件是中文改写与合并，不是复制或翻译**：上游拆成两个 skill，这里合成一个；反例保留其推理但按本仓库口径重述。
+
+以下来自本人事故，上游没有：「番茄炒蛋-不要红烧肉版」这一例、B4 的 Web/小程序形状抄写点清单、B2 里状态词三副本那一例、A1 里「改必须为可选顺手重构邻近数节」那一例。
