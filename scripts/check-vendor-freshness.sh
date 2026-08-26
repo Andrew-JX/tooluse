@@ -10,7 +10,7 @@ for d in skills/*/; do
   [ -f "$src" ] || continue
   name=$(basename "$d")
   repo=$(grep -oE 'github\.com/[^)]+' "$src" | head -1 | sed 's|github.com/||')
-  path=$(grep -E '^\| 路径' "$src" | grep -oE '`[^`]+`' | tr -d '`')
+  upath=$(grep -E '^\| 路径' "$src" | grep -oE '`[^`]+`' | tr -d '`')
   pin=$(grep -E '^\| 钉住 SHA' "$src" | grep -oE '`[0-9a-f]{7,40}`' | tr -d '`')
   [ -n "$repo" ] && [ -n "$path" ] || { echo "?? $name: SOURCE.md 解析失败"; continue; }
 

@@ -1,0 +1,22 @@
+name: 仓库自检
+
+# 只查可判定的不变量：目录名与 name 一致、第三方出处完整、链接可落地、
+# 第三方内容文件未被本地编辑。不查内容对不对——那不是门禁能判的。
+# 四条都做过负向控制：故意弄坏能变红，还原后回绿。
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  self-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # ④ 要读 git log，浅克隆会误判
+      - run: ./scripts/self-check.sh
