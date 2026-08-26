@@ -2,7 +2,7 @@
 # 仓库自检：只查可判定的结构不变量，不查内容对不对。
 # 每条都做过负向控制（见 CHANGELOG 2026-08-26）。任何一条失败即退出码 1。
 #
-# 第三方逐字副本与上游的逐字比对不在这里，在 scripts/check-vendor-freshness.sh（需联网）。
+# 不做联网比对：vendored 的是提示词文本，钉住即可，上游前进不构成本地缺陷。
 set -uo pipefail
 cd "$(dirname "$0")/.."
 fail=0
@@ -10,10 +10,9 @@ skipped=0
 note(){ echo "  ✗ $1"; fail=1; }
 skip(){ echo "  – $1"; skipped=$((skipped+1)); }
 
-# 第三方判据：目录内是否存在 THIRD-PARTY.md 登记，而不是「有没有 SOURCE.md」——
-# 用后者会导致「删掉 SOURCE.md 就不再被检查」。
-# 只认表格行，不认正文提及——正文里也会提到自建 Skill 的名字
-is_vendored(){ grep -qE "^\| \`$1\`" skills/THIRD-PARTY.md 2>/dev/null; }
+# 第三方判据：以 NOTICE 的登记表为准，不是「有没有 SOURCE.md」——
+# 用后者会导致「删掉 SOURCE.md 就不再被检查」。NOTICE 因许可证要求必须存在。
+is_vendored(){ grep -q "\`skills/$1/\`" NOTICE 2>/dev/null; }
 
 echo "① frontmatter name 与目录名一致"
 for d in skills/*/; do
@@ -42,20 +41,20 @@ else
   done
 fi
 
-echo "③ THIRD-PARTY.md 登记的每一项都必须有完整出处"
+echo "③ NOTICE 登记的每一项都必须有完整出处"
 while IFS= read -r n; do
-  [ -d "skills/$n" ] || { note "THIRD-PARTY.md 登记了 ${n}，但目录不存在"; continue; }
+  [ -d "skills/$n" ] || { note "NOTICE 登记了 ${n}，但目录不存在"; continue; }
   s="skills/$n/SOURCE.md"
   [ -f "$s" ] || { note "$n 已登记为第三方，但缺 SOURCE.md"; continue; }
   grep -qE '`[0-9a-f]{40}`' "$s" || note "$n/SOURCE.md 没有 40 位 SHA"
   grep -q '许可证' "$s" || note "$n/SOURCE.md 没写许可证"
-done < <(grep -oE "^\| \`[a-z0-9-]+\`" skills/THIRD-PARTY.md 2>/dev/null | tr -d '|` ')
+done < <(grep -oE "\`skills/[a-z0-9-]+/\`" NOTICE 2>/dev/null | tr -d '`' | sed 's|skills/||; s|/||')
 
-echo "④ 有 SOURCE.md 的目录必须在 THIRD-PARTY.md 里登记"
+echo "④ 有 SOURCE.md 的目录必须在 NOTICE 里登记"
 for d in skills/*/; do
   [ -f "${d}SOURCE.md" ] || continue
   n=$(basename "$d")
-  is_vendored "$n" || note "$n 有 SOURCE.md 却未登记进 THIRD-PARTY.md"
+  is_vendored "$n" || note "$n 有 SOURCE.md 却未登记进 NOTICE"
 done
 
 echo "⑤ 第三方内容文件不得有本地未提交改动"
@@ -103,7 +102,7 @@ if [ -d scripts/vendor ]; then
   [ -f scripts/vendor/SOURCE.md ] || note "scripts/vendor 缺 SOURCE.md"
   grep -qE '`[0-9a-f]{40}`' scripts/vendor/SOURCE.md 2>/dev/null || note "scripts/vendor/SOURCE.md 没有 40 位 SHA"
   ls scripts/vendor/LICENSE-* >/dev/null 2>&1 || note "scripts/vendor 缺许可证全文"
-  grep -q 'quick_validate.py' skills/THIRD-PARTY.md 2>/dev/null || note "scripts/vendor 未登记进 THIRD-PARTY.md"
+  grep -q 'scripts/vendor' NOTICE 2>/dev/null || note "scripts/vendor 未登记进 NOTICE"
 fi
 
 echo "⑨ 顶层许可证与 NOTICE 划清了第三方边界"
@@ -113,7 +112,7 @@ echo "⑨ 顶层许可证与 NOTICE 划清了第三方边界"
 grep -q 'Permission is hereby granted' LICENSE 2>/dev/null || note "LICENSE 不是可识别的 MIT 正文"
 [ -f NOTICE ] || note "缺 NOTICE——没有任何地方声明第三方副本不受 LICENSE 约束"
 grep -q 'SOURCE.md' NOTICE 2>/dev/null || note "NOTICE 没有给出第三方副本的判别方法"
-grep -q 'THIRD-PARTY.md' README.md 2>/dev/null || note "README 没有指向第三方许可证清单"
+grep -q 'NOTICE' README.md 2>/dev/null || note "README 没有指向第三方许可证清单"
 
 echo
 if [ $fail -ne 0 ]; then

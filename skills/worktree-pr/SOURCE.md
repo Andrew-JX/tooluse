@@ -11,4 +11,4 @@
 | 许可证 | Apache-2.0 — Copyright 2026 scarletkc，全文见 [../LICENSE-scarletkc-agents](../LICENSE-scarletkc-agents)，另见 [../NOTICE-scarletkc-agents](../NOTICE-scarletkc-agents) |
 
 **改动一律提到上游。** 要覆盖它的行为，写进自建 Skill 并在那里说明，不要改这里。
-跑 `scripts/check-vendor-freshness.sh` 核对是否已与上游分叉。详见 [../THIRD-PARTY.md](../THIRD-PARTY.md)。
+上游改了不影响这份副本——**这是提示词文本，不是会失效的代码**。要跟进就重新取回并更新上面的 SHA 与日期。
