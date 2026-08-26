@@ -55,6 +55,7 @@
 - `project-doc-system` —— 脚手架、索引门禁与负向控制已在隔离临时项目跑通，并对两个真实项目做过只读探测，但**没有任何项目按它建起过完整文档体系**。「文档体系活下来了」要几个月和多次需求变更才验证得了。
 - `thinking-toolkit` —— 2026-08-25 新增。真实调用只有一次：用方法 02（双层解释法）解释本仓库本身，路由判断、两层结构与三样收尾都按 `SKILL.md` 执行。两项减损：调用者是作者本人，且发生在写出它的同一个会话里。
 - `scope-bound-editor` —— 2026-08-25 新增，**零调用**。规则形状多数来自两个外部 skill 的中文改写，只有少数几例来自本人事故；**没有任何一条在真实批次里拦下过东西**。它的效果是弥散的（改动更小、措辞更干净），比其余 Skill 更难取证——可测的做法是数那几类形状在 diff 里的出现次数，尚未做。
+- `grilling` / `grill-me`（第三方） —— **从未被真实调用过**。本机会话历史三处独立记录都写着「已读文档，未跑过」；`mj-portfolio` 的工具清单同样标 `usedIn: '未使用'`。收进来的依据是用户点名加 L1/MIT 零成本，**不是既有使用证据**。
 - `life-design-interview` —— 2026-08-25 新增，**零调用**。`references/life-design.md` 有一节标〔补写〕，是原始材料缺页后按同一框架补的，不是原文。
 
 `thinking-toolkit` 和 `life-design-interview` 与其余六个不同源：规则不是从本人事故里长出来的，而是把一组外部方法整理成路由与边界，因此连「幸存者偏差」那条部分缓解也不适用——**它们的失效样本一个都还没有**。
@@ -65,7 +66,7 @@
 
 ## 第三方 Skill
 
-`skills/` 下的 `grilling` 与 `grill-me` 是**上游的逐字副本**，不是本仓库写的。`grilling` 用 design tree 加 frontier 分轮提问，把一个很松的想法逼成一组能落地的决定；`grill-me` 只是它的转发壳，两个必须一起装。来自 [mattpocock/skills](https://github.com/mattpocock/skills)，MIT。取回 SHA、许可证全文与陈旧核对方法见 [skills/THIRD-PARTY.md](skills/THIRD-PARTY.md)。
+`skills/` 下的 `grilling` 与 `grill-me` 是**上游的逐字副本**，不是本仓库写的。`grilling` 用 design tree 加 frontier 分轮提问，把一个很松的想法逼成一组能落地的决定；`grill-me` 只是它的转发壳，两个必须一起装。来自 [mattpocock/skills](https://github.com/mattpocock/skills)，MIT。取回 SHA 与许可证全文见 [skills/THIRD-PARTY.md](skills/THIRD-PARTY.md)。跑 `scripts/check-vendor-freshness.sh` 核对是否已与上游分叉——它只报告，**跟不跟是判断，不是自动动作**。
 
 **硬规矩：这两个目录本地永不编辑。** 钉住 SHA 且不编辑，把「静默分叉」降级成「可检测的陈旧」。要覆盖上游行为就写进自建 Skill，不改那边。
 
