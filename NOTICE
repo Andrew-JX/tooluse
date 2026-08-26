@@ -24,4 +24,4 @@
 
 These directories are verbatim third-party copies governed by their own
 upstream licenses, not by LICENSE. A directory containing SOURCE.md is a
-third-party copy; see skills/THIRD-PARTY.md for pinned SHAs and full texts.
+third-party copy; its SOURCE.md records the pinned SHA and license.
