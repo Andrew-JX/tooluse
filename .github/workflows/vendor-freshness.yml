@@ -20,14 +20,20 @@ jobs:
       - name: 比对各 SOURCE.md 的钉住 SHA 与上游
         id: check
         run: |
-          out=$(./scripts/check-vendor-freshness.sh)
+          # 脚本在「本地漂移」或「未知」时退出非零；上游前进属正常，退出 0。
+          # 这里先捕获再判断，不让非零直接中断 job。
+          set +e
+          out=$(./scripts/check-vendor-freshness.sh 2>&1)
+          rc=$?
+          set -e
           echo "$out"
+          echo "退出码 $rc"
           {
             echo 'report<<REPORT_EOF'
             echo "$out"
             echo 'REPORT_EOF'
           } >> "$GITHUB_OUTPUT"
-          if echo "$out" | grep -q '^⚠'; then
+          if echo "$out" | grep -qE '^(⚠|✗|\?\?)'; then
             echo 'stale=true' >> "$GITHUB_OUTPUT"
           else
             echo 'stale=false' >> "$GITHUB_OUTPUT"
@@ -39,13 +45,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPORT: ${{ steps.check.outputs.report }}
         run: |
-          title="第三方副本已与上游分叉（$(date -u +%Y-%m-%d)）"
-          if gh issue list --state open --search "分叉 in:title" --json number -q '.[0].number' | grep -q .; then
-            echo "已有未关闭的分叉 issue，跳过"
+          title="第三方副本检查有异常（$(date -u +%Y-%m-%d)）"
+          if gh issue list --state open --search "第三方副本检查 in:title" --json number -q '.[0].number' | grep -q .; then
+            echo "已有未关闭的同类 issue，跳过"
             exit 0
           fi
           printf '%s\n' \
-            '`scripts/check-vendor-freshness.sh` 检出 `skills/` 下的第三方逐字副本与上游 main 不再一致。' \
+            '`scripts/check-vendor-freshness.sh` 有非「一致」的结论。三种情况含义不同：' '' \
+            '- `✗` **本地漂移**：本地内容与钉住的 SHA 不符，第三方副本被本地改过——需要还原。' \
+            '- `⚠` **上游已更新**：本地等于 pin，但上游 main 前进了——跟不跟是判断。' \
+            '- `??` **未知**：取不到上游，本次结果不构成一致证明——不是「没问题」。' '' \
             '' '```' "$REPORT" '```' '' \
             '**这不是待办，是一个判断题。** 上游改了不等于要跟——先看 diff 里改的是什么。' '' \
             '决定跟进：重新取回、更新对应 `SOURCE.md` 的钉住 SHA 与取回日期、在 `CHANGELOG.md` 记一行。' \

@@ -136,8 +136,14 @@ function triggers(root, docsDir) {
     found.push(`顶层目录 ${dirs.length} 个（${dirs.join("、")}）→ 需要给 AGENTS.md 的目录清单配门禁`);
   }
   if (has(root, "package.json")) {
-    const scripts = Object.keys(JSON.parse(readFileSync(join(root, "package.json"), "utf8")).scripts ?? {});
-    if (!scripts.some((name) => /^(test|check|verify|lint)/.test(name))) {
+    // 一个生长信号读不到，不该丢掉其余全部信号——探测是尽力而为，不是全有或全无
+    let scripts = null;
+    try {
+      scripts = Object.keys(JSON.parse(readFileSync(join(root, "package.json"), "utf8")).scripts ?? {});
+    } catch {
+      found.push("package.json 存在但无法解析 → 已跳过门禁探测，其余信号不受影响");
+    }
+    if (scripts && !scripts.some((name) => /^(test|check|verify|lint)/.test(name))) {
       found.push("package.json 里没有 test/check/verify/lint 类命令 → 目前没有任何机器门禁，文档里的「必须」都无法被守住");
     }
   }

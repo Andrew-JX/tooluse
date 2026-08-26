@@ -14,7 +14,6 @@
 |---|---|---|---|---|
 | `diagnosing-bugs` | mattpocock/skills | `skills/engineering/diagnosing-bugs` | `6654f6b60cd9` | MIT |
 | `grilling` | mattpocock/skills | `skills/productivity/grilling` | `6654f6b60cd9` | MIT |
-| `grill-me` | mattpocock/skills | `skills/productivity/grill-me` | `6654f6b60cd9` | MIT |
 | `codex-cli` | scarletkc/agents | `skills/codex-cli` | `d5a312346adc` | Apache-2.0 |
 | `worktree-pr` | scarletkc/agents | `skills/worktree-pr` | `d5a312346adc` | Apache-2.0 |
 
@@ -25,7 +24,9 @@
 | [mattpocock/skills](https://github.com/mattpocock/skills) | Copyright (c) 2026 Matt Pocock | [LICENSE-mattpocock-skills](LICENSE-mattpocock-skills) |
 | [scarletkc/agents](https://github.com/scarletkc/agents) | Copyright 2026 scarletkc | [LICENSE-scarletkc-agents](LICENSE-scarletkc-agents) · [NOTICE-scarletkc-agents](NOTICE-scarletkc-agents) |
 
-`grill-me` 只是一个转发壳，正文在 `grilling`，**两个必须一起装**，否则 `grill-me` 触发后会指向不存在的 Skill。
+**`grill-me` 曾经收录，2026-08-26 移除。** 它是个 7 行转发壳，靠 `disable-model-invocation: true` 声明「模型不许自主调用，只能人手动喊」。但官方 `quick_validate.py` 的允许字段只有 `allowed-tools / description / license / metadata / name`——**这个字段不被支持，那道锁根本不存在**。于是它退化成一个 description 模糊、与 `grilling` 抢触发的多余节点。
+
+移除不违反「本地永不编辑」：没有改它的内容，只是不再收录。**触发能力零损失**——`grilling` 自己的 description 明写 `or uses any 'grill' trigger phrases`，「grill me」这类说法本来就由它接。
 
 ## 没收录的两个，以及为什么
 
