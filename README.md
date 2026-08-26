@@ -35,12 +35,16 @@
 | 有人交了东西，**要独立复核** | `evidence-led-reviewer` | 自建 |
 | **改的是现成的东西**，怕越界或漏抄写点 | `scope-bound-editor` | 自建 |
 | **有个 bug 查不出来**，或性能回归定位不到 | `diagnosing-bugs` | 第三方 |
-| 要**换一个模型的窗口**拿独立性，或把一段活外包出去 | `codex-cli` | 第三方 |
+| 要把一段活**派给 Codex CLI 跑**（定模型、effort、沙箱权限、怎么读回结果） | `codex-cli` | 第三方 |
 | 改动大 / 要并行 / **需要一份没动过的 baseline 对比** | `worktree-pr` | 第三方 |
 | 要**发布到自有服务器** | `deploy-to-self-managed-server` | 自建 |
 | 新项目**要建文档体系** | `project-doc-system` | 自建 |
 | **不是工程问题**：概念看不懂、调研、核查、纠结选哪个 | `thinking-toolkit`（它自己再路由十个方法） | 自建 |
 | 想弄清**自己**擅长什么、想过什么样的生活 | `life-design-interview` | 自建 |
+
+**「换一个不共享我盲区的窗口拿独立性」不在这张表里，因为它不是 Skill。** 它是一条实践：换一个模型的窗口、另一个 agent 客户端、或另一家 CLI，让它对着提交自己去读——**换的是读者，不是角色名**。`codex-cli` 只在这条实践恰好落到 Codex CLI 上时才用得着，它是那一个工具的操作手册，不是这条原则的载体。
+
+这条原则的真实战绩：2026-08-26 的五个 P0/P1 全部由外部窗口发现，作者自评时一个都没看见。
 
 **这张表只对读它的人生效，不参与 Skill 自动选择。** 自动选择的依据只有各 Skill 的 `name` 和 `description`，改这张表不会改变触发行为——它补的是人的导航，不是机制。
 
@@ -102,6 +106,12 @@
 许可证与 NOTICE 全文见 [skills/THIRD-PARTY.md](skills/THIRD-PARTY.md)。跑 `scripts/check-vendor-freshness.sh` 核对是否已分叉；`.github/workflows/vendor-freshness.yml` 每周一自动跑一次，有分叉就开 issue，**只报告不自动更新**。
 
 两处自建 Skill 用了上游的规则形状但没有收录原文，属于改写而非副本，出处记在各自文件末尾：`scope-bound-editor`（来自 scarletkc 的 `scoped-change` 与 `ux-writing`）、`acceptance-author` 第 10 项（来自 mattpocock 的 `tdd` 反模式一节）。**`tdd` 本身没收**——它的「先写失败测试」与 `scope-bound-editor` A4「逻辑定了再钉测试」冲突。
+
+## 许可证
+
+自建内容采用 **MIT**（见 [LICENSE](LICENSE)）——可自由复制、修改、再分发，保留版权与许可声明即可。
+
+**第三方逐字副本不在其内**，各自适用上游许可证：`skills/` 下带 `SOURCE.md` 的四个目录（`diagnosing-bugs`、`grilling` 为 MIT；`codex-cli`、`worktree-pr` 为 Apache-2.0），以及 `scripts/vendor/`（Apache-2.0，Anthropic）。逐条出处、钉住 SHA 与许可证全文见 [skills/THIRD-PARTY.md](skills/THIRD-PARTY.md)。
 
 ## 已知边界
 

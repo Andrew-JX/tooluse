@@ -106,6 +106,11 @@ if [ -d scripts/vendor ]; then
   grep -q 'quick_validate.py' skills/THIRD-PARTY.md 2>/dev/null || note "scripts/vendor 未登记进 THIRD-PARTY.md"
 fi
 
+echo "⑨ 顶层许可证存在，且划清了第三方边界"
+[ -f LICENSE ] || note "缺顶层 LICENSE——自建内容默认不授予任何再分发许可"
+grep -q 'SOURCE.md' LICENSE 2>/dev/null || note "LICENSE 没有声明第三方副本不在其覆盖范围内"
+grep -q 'THIRD-PARTY.md' README.md 2>/dev/null || note "README 没有指向第三方许可证清单"
+
 echo
 if [ $fail -ne 0 ]; then
   echo "有失败项。"
