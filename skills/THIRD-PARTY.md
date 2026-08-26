@@ -10,25 +10,38 @@
 
 ## 清单
 
-| Skill | 上游 | 路径 | 许可证 |
-|---|---|---|---|
-| `grilling` | [mattpocock/skills](https://github.com/mattpocock/skills) | `skills/productivity/grilling` | MIT |
-| `grill-me` | [mattpocock/skills](https://github.com/mattpocock/skills) | `skills/productivity/grill-me` | MIT |
+| Skill | 上游 | 路径 | 钉住 SHA | 许可证 |
+|---|---|---|---|---|
+| `diagnosing-bugs` | mattpocock/skills | `skills/engineering/diagnosing-bugs` | `6654f6b60cd9` | MIT |
+| `grilling` | mattpocock/skills | `skills/productivity/grilling` | `6654f6b60cd9` | MIT |
+| `grill-me` | mattpocock/skills | `skills/productivity/grill-me` | `6654f6b60cd9` | MIT |
+| `codex-cli` | scarletkc/agents | `skills/codex-cli` | `d5a312346adc` | Apache-2.0 |
+| `worktree-pr` | scarletkc/agents | `skills/worktree-pr` | `d5a312346adc` | Apache-2.0 |
 
-- **取回 SHA**：`6654f6b60cd9d5be8b54c6fafe44346dabeb3b76`
-- **取回日期**：2026-08-25
-- **版权**：Copyright (c) 2026 Matt Pocock，许可证全文见 [LICENSE-mattpocock-skills](LICENSE-mattpocock-skills)
+全部取回于 2026-08-25。每个目录内的 `SOURCE.md` 是该副本的权威记录，上表是汇总。
+
+| 上游 | 版权 | 许可证全文 |
+|---|---|---|
+| [mattpocock/skills](https://github.com/mattpocock/skills) | Copyright (c) 2026 Matt Pocock | [LICENSE-mattpocock-skills](LICENSE-mattpocock-skills) |
+| [scarletkc/agents](https://github.com/scarletkc/agents) | Copyright 2026 scarletkc | [LICENSE-scarletkc-agents](LICENSE-scarletkc-agents) · [NOTICE-scarletkc-agents](NOTICE-scarletkc-agents) |
 
 `grill-me` 只是一个转发壳，正文在 `grilling`，**两个必须一起装**，否则 `grill-me` 触发后会指向不存在的 Skill。
+
+## 没收录的两个，以及为什么
+
+- **`ux-writing`（scarletkc）与 `scoped-change`（scarletkc）** —— 规则形状已经中文改写并合并进自建的 `scope-bound-editor`，收原文会变成同一套规则的第二份副本。
+- **`tdd`（mattpocock）** —— 它的「先写失败测试」与 `scope-bound-editor` A4「逻辑定了再钉测试」直接冲突，两个不能同时装。只把它 anti-patterns 一节的三个形状按判据视角改写进了 `acceptance-author` 第 10 项。
 
 ## 怎么核对是否已经陈旧
 
 ```bash
-curl -sf "https://raw.githubusercontent.com/mattpocock/skills/main/skills/productivity/grilling/SKILL.md" | diff - skills/grilling/SKILL.md
+./scripts/check-vendor-freshness.sh
 ```
+
+它读每个 `SOURCE.md` 的钉住 SHA，与上游 main 逐字比对，**只报告不自动更新**。`.github/workflows/vendor-freshness.yml` 每周一自动跑一次，发现分叉就开一个 issue。
 
 有差异说明上游动了。**决定跟不跟是判断，不是自动动作**：确认要跟时重新取回、更新上表的 SHA 与日期，并在变更账本记一行。
 
 ## 为什么只有这两个
 
-上游约 35 个 Skill，这里只放真实用过的。没用过就没有评价的资格，把没用过的搬进来等于把候选表伪装成工具箱。
+上游约 35 个 Skill，这里只放挑过的。**逐个读过原文、比对过与自建 Skill 的重叠才收**，不批量搬——把没挑过的搬进来等于把候选表伪装成工具箱。评估结论记在 `CHANGELOG.md`。

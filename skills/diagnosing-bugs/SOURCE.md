@@ -1,11 +1,11 @@
-# grill-me — 第三方逐字副本，本地不编辑
+# diagnosing-bugs — 第三方逐字副本，本地不编辑
 
 本目录**不是本仓库写的**。
 
 | | |
 |---|---|
 | 上游 | [mattpocock/skills](https://github.com/mattpocock/skills) |
-| 路径 | `skills/productivity/grill-me` |
+| 路径 | `skills/engineering/diagnosing-bugs` |
 | 钉住 SHA | `6654f6b60cd9d5be8b54c6fafe44346dabeb3b76` |
 | 取回日期 | 2026-08-25 |
 | 许可证 | MIT — Copyright (c) 2026 Matt Pocock，全文见 [../LICENSE-mattpocock-skills](../LICENSE-mattpocock-skills) |

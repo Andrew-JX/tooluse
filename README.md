@@ -1,6 +1,6 @@
 # Tooluse Skills
 
-这是一组把验收、执行、审查、改动范围约束、自有服务器部署、项目文档体系，以及思考方法选型与自我认识访谈写成可复用规则的 Skills。它们约束证据怎么产生、怎样冻结、由谁裁决，也把真实部署中重复出现的安全边界整理成清单；不替代产品判断、团队权限或真实用户验收。八个自建 Skill 加两个第三方逐字副本，共十个目录，全部从本仓库安装。它们平铺在 `skills/` 同一层，第三方的在自己目录里带 `SOURCE.md`。
+这是一组把验收、执行、审查、改动范围约束、自有服务器部署、项目文档体系，以及思考方法选型与自我认识访谈写成可复用规则的 Skills。它们约束证据怎么产生、怎样冻结、由谁裁决，也把真实部署中重复出现的安全边界整理成清单；不替代产品判断、团队权限或真实用户验收。八个自建 Skill 加五个第三方逐字副本，共十三个目录，全部从本仓库安装。它们平铺在 `skills/` 同一层，第三方的在自己目录里带 `SOURCE.md`。
 
 ## 这是什么
 
@@ -55,7 +55,6 @@
 - `project-doc-system` —— 脚手架、索引门禁与负向控制已在隔离临时项目跑通，并对两个真实项目做过只读探测，但**没有任何项目按它建起过完整文档体系**。「文档体系活下来了」要几个月和多次需求变更才验证得了。
 - `thinking-toolkit` —— 2026-08-25 新增。真实调用只有一次：用方法 02（双层解释法）解释本仓库本身，路由判断、两层结构与三样收尾都按 `SKILL.md` 执行。两项减损：调用者是作者本人，且发生在写出它的同一个会话里。
 - `scope-bound-editor` —— 2026-08-25 新增，**零调用**。规则形状多数来自两个外部 skill 的中文改写，只有少数几例来自本人事故；**没有任何一条在真实批次里拦下过东西**。它的效果是弥散的（改动更小、措辞更干净），比其余 Skill 更难取证——可测的做法是数那几类形状在 diff 里的出现次数，尚未做。
-- `grilling` / `grill-me`（第三方） —— **从未被真实调用过**。本机会话历史三处独立记录都写着「已读文档，未跑过」；`mj-portfolio` 的工具清单同样标 `usedIn: '未使用'`。收进来的依据是用户点名加 L1/MIT 零成本，**不是既有使用证据**。
 - `life-design-interview` —— 2026-08-25 新增，**零调用**。`references/life-design.md` 有一节标〔补写〕，是原始材料缺页后按同一框架补的，不是原文。
 
 `thinking-toolkit` 和 `life-design-interview` 与其余六个不同源：规则不是从本人事故里长出来的，而是把一组外部方法整理成路由与边界，因此连「幸存者偏差」那条部分缓解也不适用——**它们的失效样本一个都还没有**。
@@ -66,13 +65,21 @@
 
 ## 第三方 Skill
 
-`skills/` 下的 `grilling` 与 `grill-me` 是**上游的逐字副本**，不是本仓库写的。`grilling` 用 design tree 加 frontier 分轮提问，把一个很松的想法逼成一组能落地的决定；`grill-me` 只是它的转发壳，两个必须一起装。来自 [mattpocock/skills](https://github.com/mattpocock/skills)，MIT。取回 SHA 与许可证全文见 [skills/THIRD-PARTY.md](skills/THIRD-PARTY.md)。跑 `scripts/check-vendor-freshness.sh` 核对是否已与上游分叉——它只报告，**跟不跟是判断，不是自动动作**。
+`skills/` 下有五个目录是**上游的逐字副本**，不是本仓库写的。它们和自建 Skill 平铺在同一层（嵌套会让 Skill 发现找不到），各自目录内带 `SOURCE.md` 标出处与钉住的 SHA。
 
-**硬规矩：这两个目录本地永不编辑。** 钉住 SHA 且不编辑，把「静默分叉」降级成「可检测的陈旧」。要覆盖上游行为就写进自建 Skill，不改那边。
+| Skill | 干什么 | 上游 | 许可证 |
+|---|---|---|---|
+| `diagnosing-bugs` | 难 bug 与性能回归的诊断循环：先建反馈环 → 复现并最小化 → 假设 → 插桩。完成判据是「一个能稳定变红的紧环」 | [mattpocock/skills](https://github.com/mattpocock/skills) | MIT |
+| `grilling` | design tree + frontier 分轮提问，把一个很松的想法逼成一组能落地的决定 | 同上 | MIT |
+| `grill-me` | `grilling` 的转发壳，两个必须一起装 | 同上 | MIT |
+| `codex-cli` | 什么时候值得把活交给 Codex CLI，以及怎么定模型、effort、沙箱权限和怎么读回结果 | [scarletkc/agents](https://github.com/scarletkc/agents) | Apache-2.0 |
+| `worktree-pr` | 一个任务值不值得单开 worktree；从集成分支切、主工作树保持可用、交付前与未动过的 baseline 对比 | 同上 | Apache-2.0 |
 
-`scope-bound-editor` 是另一种处理方式：它的规则形状来自 scarletkc 的 `scoped-change` 与 `ux-writing`（Apache-2.0），但是**中文改写与合并**——上游拆两个，这里合一个，并补入本人事故。所以它算自建，出处记在该文件末尾。
+**硬规矩：这五个目录本地永不编辑。** 钉住 SHA 且不编辑，把「静默分叉」降级成「可检测的陈旧」。要覆盖上游行为就写进自建 Skill，不改那边。
 
-上游约 35 个 Skill，这里只放真实用过的。没用过就没有评价的资格。
+许可证与 NOTICE 全文见 [skills/THIRD-PARTY.md](skills/THIRD-PARTY.md)。跑 `scripts/check-vendor-freshness.sh` 核对是否已分叉；`.github/workflows/vendor-freshness.yml` 每周一自动跑一次，有分叉就开 issue，**只报告不自动更新**。
+
+两处自建 Skill 用了上游的规则形状但没有收录原文，属于改写而非副本，出处记在各自文件末尾：`scope-bound-editor`（来自 scarletkc 的 `scoped-change` 与 `ux-writing`）、`acceptance-author` 第 10 项（来自 mattpocock 的 `tdd` 反模式一节）。**`tdd` 本身没收**——它的「先写失败测试」与 `scope-bound-editor` A4「逻辑定了再钉测试」冲突。
 
 ## 已知边界
 

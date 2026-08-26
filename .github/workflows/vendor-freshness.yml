@@ -1,0 +1,53 @@
+name: 第三方副本陈旧检查
+
+# 每周一 09:00（北京时间）跑一次，另可手动触发。
+# 只报告：发现分叉就开 issue，不自动更新——跟不跟是判断，不是自动动作。
+on:
+  schedule:
+    - cron: '0 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 比对各 SOURCE.md 的钉住 SHA 与上游
+        id: check
+        run: |
+          out=$(./scripts/check-vendor-freshness.sh)
+          echo "$out"
+          {
+            echo 'report<<REPORT_EOF'
+            echo "$out"
+            echo 'REPORT_EOF'
+          } >> "$GITHUB_OUTPUT"
+          if echo "$out" | grep -q '^⚠'; then
+            echo 'stale=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'stale=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 有分叉就开 issue
+        if: steps.check.outputs.stale == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPORT: ${{ steps.check.outputs.report }}
+        run: |
+          title="第三方副本已与上游分叉（$(date -u +%Y-%m-%d)）"
+          if gh issue list --state open --search "分叉 in:title" --json number -q '.[0].number' | grep -q .; then
+            echo "已有未关闭的分叉 issue，跳过"
+            exit 0
+          fi
+          printf '%s\n' \
+            '`scripts/check-vendor-freshness.sh` 检出 `skills/` 下的第三方逐字副本与上游 main 不再一致。' \
+            '' '```' "$REPORT" '```' '' \
+            '**这不是待办，是一个判断题。** 上游改了不等于要跟——先看 diff 里改的是什么。' '' \
+            '决定跟进：重新取回、更新对应 `SOURCE.md` 的钉住 SHA 与取回日期、在 `CHANGELOG.md` 记一行。' \
+            '决定不跟：关掉这个 issue 即可，下周仍会再报。' > body.md
+          gh issue create --title "$title" --body-file body.md

@@ -11,4 +11,4 @@
 | 许可证 | MIT — Copyright (c) 2026 Matt Pocock，全文见 [../LICENSE-mattpocock-skills](../LICENSE-mattpocock-skills) |
 
 **改动一律提到上游。** 要覆盖它的行为，写进自建 Skill 并在那里说明，不要改这里。
-详见 [../THIRD-PARTY.md](../THIRD-PARTY.md)。
+跑 `scripts/check-vendor-freshness.sh` 核对是否已与上游分叉。详见 [../THIRD-PARTY.md](../THIRD-PARTY.md)。
