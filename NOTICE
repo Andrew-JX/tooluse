@@ -6,21 +6,17 @@
 
 | 位置 | 上游 | 许可证 |
 |---|---|---|
-| `skills/diagnosing-bugs/` | mattpocock/skills | MIT |
-| `skills/grilling/` | mattpocock/skills | MIT |
-| `skills/codex-cli/` | scarletkc/agents | Apache-2.0 |
-| `skills/worktree-pr/` | scarletkc/agents | Apache-2.0 |
 | `scripts/vendor/` | anthropics/skills | Apache-2.0 |
+
+`skills/` 下已无第三方逐字副本。`scope-bound-editor` 是对 scarletkc/agents
+两个 skill（Apache-2.0）的中文改写与合并，不是复制，出处见该文件「出处」一节。
 
 判别方法：**目录内有 `SOURCE.md` 的就是第三方副本**，其中记录了上游仓库、
 路径、钉住的 SHA 与许可证。许可证全文：
-[MIT (mattpocock)](licenses/LICENSE-mattpocock-skills) ·
-[Apache-2.0 (scarletkc)](licenses/LICENSE-scarletkc-agents) ·
-[NOTICE (scarletkc)](licenses/NOTICE-scarletkc-agents) ·
 [Apache-2.0 (Anthropic)](licenses/LICENSE-anthropics-skills.txt)
 
-**不做上游保鲜。** 这些是提示词文本，不是会失效的代码；钉住的版本能用就一直能用。
-上游前进不是本地缺陷，想跟进就手动重新取回并更新对应 `SOURCE.md`。
+**不做上游保鲜。** 钉住的版本能用就一直能用；上游前进不是本地缺陷，
+想跟进就手动重新取回并更新对应 `SOURCE.md`。
 
 These directories are verbatim third-party copies governed by their own
 upstream licenses, not by LICENSE. A directory containing SOURCE.md is a

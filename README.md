@@ -35,12 +35,12 @@ Codex 用 `~/.codex/skills/`。不支持 Skills 的工具直接把对应 `SKILL.
 | | 做什么 |
 |---|---|
 | `scope-bound-editor` | 改动只做必要的那一点；产物只写最终状态，不写被否掉的方案；一个事实只有一个家；行为改了扫一遍抄写点 |
-| `grilling` | 开工前一轮轮追问，把很松的想法逼成一组能落地的决定。说「grill me」就触发 |
-| `diagnosing-bugs` | 难 bug 与性能回归：先建一个能稳定变红的紧环，再复现、假设、插桩 |
-| `worktree-pr` | 一个任务值不值得单开 worktree；从集成分支切、主工作树保持可用、交付前与未动过的 baseline 对比 |
-| `codex-cli` | 把一段活派给 Codex CLI 跑：定模型、effort、沙箱权限，以及怎么读回结果 |
 | `project-doc-system` | 建文档骨架并按触发条件生长：路由式索引控住上下文成本，索引门禁配负向控制 |
 | `thinking-toolkit` | 卡住时先选方法再回答：问题层 / 理解层 / 可信层 / 方案层 / 抉择层，十个方法按层路由 |
+
+**这个包不含通用工程手艺。** 问清需求、写实现、TDD、代码审查、诊断 bug 这些，
+见 [mattpocock/skills](https://github.com/mattpocock/skills)——外部参考，不随本仓库安装或维护。
+这里只管红线：判据先冻结、审查看事实、未决不消失。
 
 ## 方法
 
@@ -101,7 +101,7 @@ Codex 用 `~/.codex/skills/`。不支持 Skills 的工具直接把对应 `SKILL.
 
 ## 许可
 
-自建内容 MIT（[LICENSE](LICENSE)）。`skills/` 下带 `SOURCE.md` 的目录与 `scripts/vendor/`
-是第三方逐字副本，各自适用上游许可证，见 [NOTICE](NOTICE)。
+自建内容 MIT（[LICENSE](LICENSE)）。`skills/` 全部自建。`scripts/vendor/`
+是第三方逐字副本，适用上游许可证，见 [NOTICE](NOTICE)。
 
 改这个包之前先看 [CONTRIBUTING.md](CONTRIBUTING.md)。
