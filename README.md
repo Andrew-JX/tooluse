@@ -38,9 +38,31 @@ Codex 用 `~/.codex/skills/`。不支持 Skills 的工具直接把对应 `SKILL.
 | `project-doc-system` | 建文档骨架并按触发条件生长：路由式索引控住上下文成本，索引门禁配负向控制 |
 | `thinking-toolkit` | 卡住时先选方法再回答：问题层 / 理解层 / 可信层 / 方案层 / 抉择层，十个方法按层路由 |
 
-**这个包不含通用工程手艺。** 问清需求、写实现、TDD、代码审查、诊断 bug 这些，
-见 [mattpocock/skills](https://github.com/mattpocock/skills)——外部参考，不随本仓库安装或维护。
-这里只管红线：判据先冻结、审查看事实、未决不消失。
+### 工程手艺不在这个包里
+
+这里只管红线：**判据先冻结、审查看事实、未决不消失**。
+问清需求、写实现、TDD、代码审查、诊断 bug 那些手艺，用
+[mattpocock/skills](https://github.com/mattpocock/skills)。
+
+**装它，不要只给链接。** 链接最多让 Agent 读到一段文字；装了才会自动触发：
+
+```bash
+claude plugins install mattpocock-skills   # Claude Code，或会话里 /plugin install mattpocock-skills
+npx skills@latest add mattpocock/skills    # Codex 等，勾上 setup-matt-pocock-skills
+```
+
+两种装法别都用，会变成每个 Skill 两份。命令抄自
+[上游 README](https://github.com/mattpocock/skills#installation-30-second-setup)，以那边为准。
+本仓库不复制、不 vendor、不跟进它的版本。
+
+**确实只能给链接时**，把话说成指令，并给出失败时怎么办：
+
+> 遇到软件变更，去读 `https://github.com/mattpocock/skills` 的 `skills/engineering/`，
+> 只加载与当前任务命中的那个；读不到就明说「不可用」，不要凭记忆假装加载。
+
+**它的链子有前提，别硬接：** `implement` 要 spec 或 ticket；`code-review` 要固定 diff
+基线、来源 issue/spec 和已配置的 issue tracker；`grill-with-docs` 会拉 `domain-modeling`
+并维护 `CONTEXT.md`。明确的小改动直接实现就行，**不要为了接上它去人造一个 Issue**。
 
 ## 方法
 
