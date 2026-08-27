@@ -109,7 +109,9 @@ description: Evidence-led engineering review for code changes, release candidate
 
 ## 什么时候不用
 
-一晚上内、单模块、可回滚且不涉及安全、数据、权限或发布的小活不触发这个 skill。高风险改动不因规模小而跳过。
+低影响的改动——不伤用户、不碰数据与权限、没有安全面、爆炸半径小、坏了能恢复。不触发这个 skill。
+
+**判的是影响，不是耗时，也不是改了几个文件；发布本身也不自动升档。**
 
 ## 跨工具复用
 
