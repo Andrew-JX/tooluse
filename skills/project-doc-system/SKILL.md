@@ -1,13 +1,13 @@
 ---
 name: project-doc-system
-description: Set up and grow a project's documentation so an agent can work from documents instead of re-reading the whole codebase. Use when a project has no documentation structure yet, when documents have drifted from the implementation, when deciding which document to write next, when building an index so context stays affordable, or when requiring that every task and bug fix leaves a record. Covers the starting set, growth triggers, single-source rules, and machine gates.
+description: Set up and grow a project's documentation so an agent can work from documents instead of re-reading the whole codebase. Use when a project has no documentation structure yet, when documents have drifted from the implementation, when deciding which document to write next, when building an index so context stays affordable, when handing a batch between windows, clients, or models that cannot read each other's conversation, or when requiring that every task and bug fix leaves a record. Covers the starting set, growth triggers, cross-window handoff, single-source rules, and machine gates.
 ---
 
 # Project Doc System
 
 文档存在的目的只有一个：下一个窗口冷启动时，不用把仓库读一遍就能知道去哪、能改什么、什么已经验证过。达不到这个目的的文档是负债——它要被维护、会过期、还会在过期之后指挥人做错事。
 
-这份 skill 管四件事：一穷二白时写哪几份、索引怎么组织、什么条件下加下一份、怎么保证写下来的东西不烂掉。输出语言跟随用户。
+这份 skill 管五件事：一穷二白时写哪几份、索引怎么组织、什么条件下加下一份、多个窗口接力时怎么交接、怎么保证写下来的东西不烂掉。输出语言跟随用户。
 
 ## 0. 脚本在哪
 
@@ -19,9 +19,13 @@ SKILL_DIR=<本 SKILL.md 所在目录>   # 例如 ~/.claude/skills/project-doc-sy
 
 `init-docs.mjs` 是一次性脚手架，从 `$SKILL_DIR` 跑就够了。`check-doc-index.mjs` 不一样——它要进项目的默认验证命令，所以必须**复制进目标项目**再接线；留在 skill 目录里意味着项目的 CI 依赖一个不在项目仓库里的文件，换台机器就失效。
 
-## 1. 先判断项目在哪个阶段
+## 1. 先判断这个仓库归谁，再判断它在哪个阶段
 
-跑一次探测，不要凭印象：
+**不是你主导的项目——公司既有仓库、团队仓库、别人的开源仓库——这份 skill 的文件一份都不要新建。** 先服从维护者指令、仓库既有结构和远端强制规则，用他们已有的载体：Issue、MR 描述、既有的 `docs/`。发现空缺或冲突只提出差异。把自己整套文档体系写进别人的仓库，和「聊天记录当项目状态」是同一类错误，方向相反。
+
+判据是**你有没有权限决定这个仓库的文档结构**，不是这个项目有多需要文档。没有权限就只给建议，下面各节全部降级为参考。
+
+确认过归属之后，跑一次探测，不要凭印象：
 
 ```bash
 node "$SKILL_DIR/scripts/init-docs.mjs" --project-root <path> --dry-run
@@ -70,10 +74,66 @@ node "$SKILL_DIR/scripts/init-docs.mjs" --project-root <path>
 | 领域文档 | 同一个领域被追问到第三次 |
 | 账本归档（按批次 / 按功能 / 按时间，随项目定） | `progress.md` 超过约 500 行 |
 | 目录清单机器门禁 | 顶层目录超过 6 个 |
+| 交接文件 `handoff.md` + 未决清单 `open-decisions.md` | 出现第二个执行窗口，见第 5 节 |
 
 新增任何一份，同一个提交里必须把它加进 `docs/INDEX.md`，否则门禁会拦。
 
-## 5. 留痕：每批一行
+## 5. 跨窗口交接：一个文件，每批清空
+
+多个窗口接力做同一个项目时，它们的对话互不相通——**换了客户端或换了模型，上一个窗口知道什么，下一个一个字都读不到**。交接媒介只能是文件和 git：路径、commit SHA、命令与 exit code。
+
+`docs/handoff.md` 只装**当前这一批**，下一批开始时清空重写。历史在 `git log -p docs/handoff.md` 里，所以不需要批次编号，也不需要归档目录。前提是每批至少让它单独进一次提交。
+
+三段，各写各的，不改别人那段：
+
+```md
+# 批次：<一句话>
+
+## 派活（定架构的窗口写，冻结后不改）
+- 边界：只改哪些文件/目录
+- 验收：<可证伪的条件，逐条>
+- 不做但记录：
+
+## 交活（执行窗口写）
+- 证据：commit SHA / 命令 / exit code
+- 未验证：
+
+## 审查（审查窗口写）
+- P0/P1：必须修，修完重审（最多两轮）
+- P2/P3：修完直接合，不重审
+- 根因层级：实现层 → 转执行窗口 ／ 方案层 → 本批终止，回定架构的窗口
+```
+
+**只有两条边需要文件**：派活、审查结论——执行窗口读不到那两个窗口的对话。**「交活」不是给审查窗口看的**：审查看 commit 和 diff，读一份自述报告等于看摘要不看仓库事实。那一段写给你和下一批。
+
+**「根因层级」是回退边。** 审出来的若不是实现 bug，而是方案本身有问题（验收漏了场景、接口约束不成立），标记后终止本批，而不是让执行窗口在错的架构上继续打补丁。
+
+**「最多两轮」是循环出口。** 只有 P0/P1 触发重审；超过两轮升级回定架构的窗口——正好和回退边接上。
+
+**验收由派活段写，交活段只能引用不能改写。** 执行方在实现过程中顺手把标准写得贴合自己做出来的东西，不需要恶意，而且改完看不出改过。
+
+### 未决事项不留在 handoff 里
+
+覆盖式文件会吞掉未决事项，于是人会本能地补一段「上批遗留」，越滚越长——**这是 handoff 变大的唯一路径**。
+
+未决事项去 `docs/open-decisions.md`，而且**必须有出口**：一旦有结论就从文件里删除，理由进 `decisions.md` 或提交信息，约束进代码和门禁。没有出口的未决清单会长出一节「已确认的事项」，然后整份文件在一个叫「待确认」的名字底下同时装着待确认和已确认的东西——那一节本身就是出口缺失的证据。
+
+删干净之后，文件长度 ≈ 当前真正未决的条数，这是个天然有上限的数。
+
+两条自查，不需要脚本也不需要 CI：
+
+```bash
+wc -l docs/handoff.md                          # 超过 80 行：有东西该搬走了
+grep -n '已确认\|已解决\|已关闭' docs/open-decisions.md   # 有命中：出口没被执行
+```
+
+### 什么时候整个不启动
+
+微小、明确、可逆的改动不走这套：直接改 → 跑相关验证 → 检查最小 diff。只有影响判断触发时才开这个文件——碰数据、权限、迁移、对外接口、认证、不可逆变更。
+
+被绕过去的流程比小一号但真会执行的更糟，因为它还让你以为自己有防护。
+
+## 6. 留痕：每批一行
 
 每次任务、每次改 bug，往 `docs/progress.md` 追加一行，四栏：
 
@@ -83,13 +143,13 @@ node "$SKILL_DIR/scripts/init-docs.mjs" --project-root <path>
 
 证据栏写命令、exit code、提交 SHA，不写「已完成」「测试通过」这类无法核对的词。
 
-## 6. 三条硬规则
+## 7. 三条硬规则
 
 1. **单一事实源。** 同一个事实不得同时存在于两处可独立编辑的文档。出现即指定一处为权威，其余改成引用。重复副本是最大的漂移来源——改了一处，另一处立刻变成假话，而且没有任何信号。
 2. **禁止快照型文档。** 不写「当前实现是什么样」的镜像文档。当前状态由代码和门禁回答；文档只写仍然生效的**约束**，和无法从代码恢复的**理由**。快照文档必然落后于代码，而它的形式又暗示自己是权威，结果是指挥人去修改正确的实现。
 3. **规则被质疑时给验证路径。** 每条写成「必须」的规则，要能回答「不信就去跑哪条命令 / 哪个测试」。做不到就说明它没有门禁，应当改写成带边界的建议。没有门禁的「必须」等于没写。
 
-## 7. 门禁
+## 8. 门禁
 
 索引与真实文档双向比对，脚本可直接用：
 
@@ -105,7 +165,7 @@ node <project-root>/scripts/check-doc-index.mjs --project-root <project-root> --
 
 项目专属的门禁（API 契约、目录清单、配置与文档一致）形状可移植但内容不可移植，按 [references/gates.md](references/gates.md) 手工配，**每条都要带负向控制**。一个不会失败的门禁保护不了任何东西：把被守护的事实改坏，门禁必须报错，否则它守的不是它声称守的那个属性。
 
-## 8. 报告口径
+## 9. 报告口径
 
 分清四件事，不要合并：
 
