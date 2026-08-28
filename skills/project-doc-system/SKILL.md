@@ -17,7 +17,7 @@ description: Set up and grow a project's documentation so an agent can work from
 SKILL_DIR=<本 SKILL.md 所在目录>   # 例如 ~/.claude/skills/project-doc-system
 ```
 
-`init-docs.mjs` 是一次性脚手架，从 `$SKILL_DIR` 跑就够了。`check-doc-index.mjs` 不一样——它要进项目的默认验证命令，所以必须**复制进目标项目**再接线；留在 skill 目录里意味着项目的 CI 依赖一个不在项目仓库里的文件，换台机器就失效。
+`init-docs.mjs` 是一次性脚手架，从 `$SKILL_DIR` 跑就够了。它的生长触发条件是启发式的，所以自带 `--self-test`（七条正负对照加一条已知盲区），不信任探测结果时先跑它。`check-doc-index.mjs` 不一样——它要进项目的默认验证命令，所以必须**复制进目标项目**再接线；留在 skill 目录里意味着项目的 CI 依赖一个不在项目仓库里的文件，换台机器就失效。
 
 ## 1. 先判断这个仓库归谁，再判断它在哪个阶段
 

@@ -7,16 +7,19 @@
 // it. Everything past the starting set is added when its trigger fires; see
 // references/doc-catalog.md.
 
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 
 function parseArgs(argv) {
-  const args = { dryRun: false };
+  const args = { dryRun: false, selfTest: false };
   for (let i = 0; i < argv.length; i += 1) {
     if (argv[i] === "--project-root") args.projectRoot = argv[i + 1];
     else if (argv[i] === "--docs-dir") args.docsDir = argv[i + 1];
     else if (argv[i] === "--dry-run") args.dryRun = true;
+    else if (argv[i] === "--self-test") args.selfTest = true;
   }
+  if (args.selfTest) return args;
   if (!args.projectRoot) throw new Error("--project-root 是必填的");
   if (!existsSync(args.projectRoot)) throw new Error(`项目根目录不存在：${args.projectRoot}`);
   args.docsDir = args.docsDir ?? "docs";
@@ -163,10 +166,61 @@ function triggers(root, docsDir) {
   return found;
 }
 
+// --- self-test --------------------------------------------------------------
+
+// 探测驱动的是「要不要新建一份文档」，而空壳文档自带权威外观。所以这里的
+// 负向控制和正向控制同样重要：只验「该报的报了」，会漏掉「不该报的也在报」。
+const FIXTURES = [
+  // 负向控制：这些仓库不部署，报了就是催生一份空 runbook
+  { name: "只有 npm test 的 CI", files: { ".github/workflows/t.yml": "jobs:\n  t:\n    steps:\n      - run: npm test\n" }, reject: ["部署"] },
+  { name: "空仓库", files: { ".keep": "" }, reject: ["部署", "迁移"] },
+  { name: "lint + dependabot", files: { ".github/workflows/l.yml": "jobs:\n  l:\n    steps:\n      - run: eslint .\n", ".github/dependabot.yml": "version: 2\n" }, reject: ["部署"] },
+  // 正向控制：后两个没有 Dockerfile，用来证明改成读内容之后召回没丢
+  { name: "Dockerfile", files: { Dockerfile: "FROM node:20\n" }, expect: ["部署"] },
+  { name: "workflow 内 kubectl apply", files: { ".github/workflows/s.yml": "jobs:\n  deploy:\n    steps:\n      - run: kubectl apply -f k8s/\n" }, expect: ["部署"] },
+  { name: "workflow 用 environment: production", files: { ".github/workflows/r.yml": "jobs:\n  go:\n    environment: production\n" }, expect: ["部署"] },
+  { name: "migrations 目录", files: { "migrations/.keep": "" }, expect: ["迁移"] },
+];
+
+// 已知盲区，不是缺陷：用自定义脚本或非主流 CI 部署的仓库匹配不到标记，
+// 会被静默判为「没有部署」。这里把它固定成一条会一直红的期望，免得它被忘掉。
+const KNOWN_BLIND_SPOT = { name: "自定义 shell 部署脚本（已知抓不到）", files: { ".github/workflows/c.yml": "jobs:\n  go:\n    steps:\n      - run: ./scripts/ship-to-prod.sh\n" }, reject: ["部署"] };
+
+function runFixture(fixture) {
+  const root = mkdtempSync(join(tmpdir(), "init-docs-selftest-"));
+  try {
+    for (const [path, body] of Object.entries(fixture.files)) {
+      const abs = join(root, path);
+      mkdirSync(join(abs, ".."), { recursive: true });
+      writeFileSync(abs, body);
+    }
+    const out = triggers(root, "docs").join("\n");
+    const problems = [];
+    for (const needle of fixture.expect ?? []) if (!out.includes(needle)) problems.push(`该报「${needle}」却没报`);
+    for (const needle of fixture.reject ?? []) if (out.includes(needle)) problems.push(`不该报「${needle}」却报了`);
+    return problems;
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+function selfTest() {
+  let failed = 0;
+  console.log("探测判据自检（正向 + 负向对照）");
+  for (const fixture of [...FIXTURES, KNOWN_BLIND_SPOT]) {
+    const problems = runFixture(fixture);
+    if (problems.length === 0) console.log(`  ok   ${fixture.name}`);
+    else { failed += 1; console.log(`  FAIL ${fixture.name}：${problems.join("；")}`); }
+  }
+  console.log(failed === 0 ? "\n全部通过。最后一条是已知盲区，它通过表示盲区仍如实存在。" : `\n${failed} 条未通过。`);
+  return failed;
+}
+
 // --- main -------------------------------------------------------------------
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
+  if (args.selfTest) process.exit(selfTest() === 0 ? 0 : 1);
   const { projectRoot, docsDir, dryRun } = args;
 
   console.log(dryRun ? "探测（不写任何文件）" : "生成起始集");

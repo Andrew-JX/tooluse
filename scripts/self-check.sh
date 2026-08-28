@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # 仓库自检：只查可判定的结构不变量，不查内容对不对。
-# 每条都做过负向控制（见 CHANGELOG 2026-08-26）。任何一条失败即退出码 1。
+# 每条都做过负向控制：把被守护的事实改坏，对应那条必须报错。做过的那一轮
+# 见 2026-08-26 前后的 commit（CHANGELOG.md 已于 c175400 删除，账本改记在
+# commit message 里，见 CONTRIBUTING 第 3 条）。任何一条失败即退出码 1。
 #
 # 不做联网比对：vendored 的是提示词文本，钉住即可，上游前进不构成本地缺陷。
 set -uo pipefail
@@ -114,6 +116,16 @@ grep -q 'Permission is hereby granted' LICENSE 2>/dev/null || note "LICENSE 不�
 [ -f NOTICE ] || note "缺 NOTICE——没有任何地方声明第三方副本不受 LICENSE 约束"
 grep -q 'SOURCE.md' NOTICE 2>/dev/null || note "NOTICE 没有给出第三方副本的判别方法"
 grep -q 'NOTICE' README.md 2>/dev/null || note "README 没有指向第三方许可证清单"
+
+echo "⑩ 随包分发的脚本自带的判据自检"
+# 这两个脚本会被复制进用户项目并驱动决策，它们的判据必须自己带正负对照。
+# 不在默认路径上跑的自检等于没有自检——所以在这里跑，不留成「需要时手工跑」。
+if command -v node >/dev/null 2>&1; then
+  node skills/project-doc-system/scripts/init-docs.mjs --self-test >/dev/null 2>&1 \
+    || note "init-docs 探测判据自检未通过——触发条件可能在误报或漏报"
+else
+  skip "没有 node，跳过随包脚本的判据自检"
+fi
 
 echo
 if [ $fail -ne 0 ]; then
