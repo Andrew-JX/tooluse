@@ -100,6 +100,19 @@ function has(root, ...candidates) {
   return candidates.some((candidate) => existsSync(join(root, candidate)));
 }
 
+// `.github/workflows` 存在不等于会部署——只跑测试或 lint 的仓库占多数。
+// 报错的成本不对称：假阳性会催生一份空的 runbook，而空壳在形式上已经宣称自己是权威。
+// 所以这里读内容，只认真正把产物送出去的动作。
+const DEPLOY_MARKERS = /\b(deploy|kubectl|helm|flyctl|vercel|netlify|docker\/build-push-action|docker\s+push)\b|^\s*environment:/im;
+
+function hasDeployWorkflow(root) {
+  const dir = join(root, ".github/workflows");
+  if (!existsSync(dir)) return false;
+  return readdirSync(dir)
+    .filter((name) => name.endsWith(".yml") || name.endsWith(".yaml"))
+    .some((name) => DEPLOY_MARKERS.test(readFileSync(join(dir, name), "utf8")));
+}
+
 function countMarkdown(root, docsDir) {
   const absolute = join(root, docsDir);
   if (!existsSync(absolute)) return 0;
@@ -116,7 +129,7 @@ function triggers(root, docsDir) {
   const found = [];
   const dirs = topLevelDirectories(root);
 
-  if (has(root, ".github/workflows", "deploy", "ops", "Dockerfile", "docker-compose.yml", "compose.yaml")) {
+  if (has(root, "deploy", "ops", "Dockerfile", "docker-compose.yml", "compose.yaml") || hasDeployWorkflow(root)) {
     found.push("检测到部署相关文件 → 第一次生产部署之前需要 runbook 和上线自检单");
   }
   if (has(root, "migrations", "drizzle", "prisma", "alembic", "db/migrate")) {
