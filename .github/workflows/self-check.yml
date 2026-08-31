@@ -1,8 +1,8 @@
 name: 仓库自检
 
 # 只查可判定的不变量：目录名与 name 一致、第三方出处完整、链接可落地、
-# 第三方内容文件未被本地编辑。不查内容对不对——那不是门禁能判的。
-# 四条都做过负向控制：故意弄坏能变红，还原后回绿。
+# 第三方内容文件未被本地编辑、共享块各副本逐字一致。不查内容对不对——那不是门禁能判的。
+# 都做过负向控制：故意弄坏能变红，还原后回绿。
 on:
   push:
     branches: [main]
@@ -16,11 +16,12 @@ jobs:
   self-check:
     runs-on: ubuntu-latest
     env:
-      LC_ALL: en_US.UTF-8   # 本机 C locale 藏过一个 set -u 崩溃，CI 用 UTF-8 跑
+      LC_ALL: en_US.UTF-8 # 本机 C locale 藏过一个 set -u 崩溃，CI 用 UTF-8 跑
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # ④ 要读 git log，浅克隆会误判
+          fetch-depth: 0 # ④ 要读 git log，浅克隆会误判
       - name: 装 PyYAML（vendored validator 的唯一依赖）
         run: python3 -m pip install --quiet pyyaml
-      - run: ./scripts/self-check.sh
+      # --strict：CI 里依赖已装齐，不应该有跳过项；跳过了就是环境坏了，不能当通过。
+      - run: ./scripts/self-check.sh --strict
