@@ -1,6 +1,6 @@
 ---
 name: project-doc-system
-description: Set up and grow a project's documentation so an agent can work from documents instead of re-reading the whole codebase. Use when a project has no documentation structure yet, when documents have drifted from the implementation, when deciding which document to write next, when building an index so context stays affordable, when handing a batch between windows, clients, or models that cannot read each other's conversation, or when requiring that every task and bug fix leaves a record. Covers the starting set, growth triggers, cross-window handoff, single-source rules, and machine gates.
+description: Design or repair the documentation system for a user-governed, long-lived project. Use when the user explicitly asks for documentation architecture, an index, cross-window handoff, or documentation gates, or when demonstrated drift or state loss requires them. Do not use for routine documentation edits, one-off code changes, or repositories whose documentation structure the user cannot govern.
 ---
 
 # Project Doc System

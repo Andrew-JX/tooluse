@@ -9,6 +9,8 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 fail=0
 skipped=0
+strict=0
+[ "${1:-}" = "--strict" ] && strict=1
 note(){ echo "  ✗ $1"; fail=1; }
 skip(){ echo "  – $1"; skipped=$((skipped+1)); }
 
@@ -133,6 +135,10 @@ if [ $fail -ne 0 ]; then
 elif [ $skipped -gt 0 ]; then
   # 跳过和通过是两种结论，不许合并——和 freshness 的「未知≠一致」同一条规矩
   echo "没有失败项，但有 ${skipped} 项被跳过——本次结果不构成「全部通过」的证明。"
+  if [ $strict -eq 1 ]; then
+    echo "严格模式下，跳过项视为未通过。"
+    fail=2
+  fi
 else
   echo "全部通过。"
 fi

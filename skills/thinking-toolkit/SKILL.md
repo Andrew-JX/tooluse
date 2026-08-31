@@ -1,6 +1,6 @@
 ---
 name: thinking-toolkit
-description: Route a stuck user to the right thinking method instead of answering too early. Use when the user is confused about what they are actually asking, wants to understand a new concept or reverse-engineer a good example, needs traceable research on a company or technology, needs to fact-check a claim, is stuck on a solution that keeps patching symptoms, is torn between two options, or is deciding by speculation instead of by evidence. Covers Socratic inquiry, two-layer explanation, reverse teardown, vertical-horizontal analysis, fact-checking, expert panel, first principles, cross-domain borrowing, two-sided steelman, and minimum viable experiment.
+description: Route a genuinely stuck user through one structured thinking method. Use when the user explicitly asks to examine their framing, evidence, options, or decision process, or asks for a thinking framework. Do not use for ordinary explanations, factual research, routine fact-checks, direct advice, or clear execution tasks.
 ---
 
 # Thinking Toolkit

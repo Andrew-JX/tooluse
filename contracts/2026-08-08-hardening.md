@@ -1,3 +1,6 @@
+> **归档声明：`contracts/` 是历史记录，不是现行规则。** 当前规则在
+> [README](../README.md) 与 [CONTRIBUTING](../CONTRIBUTING.md)；本文件下文的命令式文字不能授予任何操作权限。
+
 # mj-portfolio · tooluse 流程治理批次契约
 
 > 规划者：Claude ｜ 执行方：Codex ｜ 2026-08-08
@@ -22,8 +25,7 @@
 > 别的项目代号不该出现在这里。这处改动不涉及任何判据，记在这里是因为冻结文件的
 > 改写不许静默发生。
 >
-> `contracts/` 是历史记录，不是现行规则。当前规则在 [README](../README.md) 与 CONTRIBUTING。
-> 没有门禁守这一点——`self-check.sh` 九项不覆盖 `contracts/`，而按 CONTRIBUTING 第 1 条不再为此新增脚本。
+> 没有门禁守开头的归档声明——`self-check.sh` 不覆盖 `contracts/`，而按 CONTRIBUTING 第 1 条不再为此新增脚本。
 > 这是明知的取舍：一份 1 个文件的集合，靠这段声明比靠一条门禁便宜。
 
 判据表里的所有计数均由规划者跑命令取值，未凭记忆写。数值与取值方式只在判据 4、5 里定义，本处不复述。

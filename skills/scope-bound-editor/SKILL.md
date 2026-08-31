@@ -1,6 +1,6 @@
 ---
 name: scope-bound-editor
-description: Hold a change to the size the request defines, and keep the deliverable free of the process that made it. Use when modifying existing code, docs, or README rather than writing from scratch, when a diff starts touching neighboring surfaces, when a compatibility layer, migration, fallback, flag, abstraction, or parallel implementation may exceed the request, when naming a commit, pull request, title, or exported artifact, when writing or changing any user-visible string such as CLI help, error text, or UI copy, when a behavior change means other copy sites now disagree, when deciding which page owns a fact, when a page is about to record a version or deployment state the code already owns, and when reviewing a diff that touches text or docs.
+description: Pull an existing edit back to the requested scope and remove process residue or duplicate truth from its deliverable. Use when the user explicitly requests a surgical/minimal change, a diff is spreading into neighboring surfaces, or an artifact contains discarded options, duplicated facts, or stale runtime snapshots. Do not use merely because an existing file or user-visible string is being edited.
 ---
 
 # Scope-Bound Editor
