@@ -1,4 +1,4 @@
 interface:
   display_name: "证据约束执行者"
-  short_description: "按冻结契约实施，并用脱敏、可穷举、可独立复核的证据交接"
-  default_prompt: "Use $evidence-bound-executor to implement this frozen batch and hand it off with auditable evidence."
+  short_description: "仅按已冻结的高影响契约实施并交接可独立复核的证据"
+  default_prompt: "Use $evidence-bound-executor only for this frozen high-impact contract after the resident gate has passed."

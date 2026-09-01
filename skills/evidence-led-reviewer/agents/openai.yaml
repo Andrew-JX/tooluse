@@ -1,4 +1,4 @@
 interface:
   display_name: "证据驱动工程审查者"
-  short_description: "以独立可复现证据分级缺陷并控制合并、发布与上线放行决策"
-  default_prompt: "Use $evidence-led-reviewer to independently review this change set and decide whether it is safe to proceed."
+  short_description: "仅由指定独立读者复核已冻结的高影响候选实现"
+  default_prompt: "Use $evidence-led-reviewer only as the named independent reviewer of this frozen high-impact candidate."

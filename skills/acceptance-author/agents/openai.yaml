@@ -1,4 +1,4 @@
 interface:
   display_name: "验收判据作者"
-  short_description: "在实现前冻结判据并攻击限定词、度量口径与假绿灯漏洞"
-  default_prompt: "Use $acceptance-author to turn this requirement into a frozen, falsifiable acceptance contract."
+  short_description: "仅在常驻块三条件齐备后冻结高影响任务的判据与三锚点"
+  default_prompt: "Use $acceptance-author only after the installed resident gate has passed to freeze this high-impact acceptance contract."
