@@ -191,7 +191,7 @@ def sections(text):
         if line.startswith('## '): current=line[3:].strip()
         else: out[current]+=line+'\n'
     return out
-checks={'': ['derived-copy:'], '本次输入':['Contract SHA','Baseline SHA','Candidate SHA','外部锚点','契约冻结的计划形式','实际取证'], '工作方式':['不能授予工具','已批准','未授权处理','宿主'], '严重度':['P0：','P1：','P2：','P3：'], '输出':['产品正确性只能写「未验证」']}
+checks={'': ['derived-copy:'], '本次输入':['Contract SHA','Baseline SHA','Candidate SHA','外部锚点','契约冻结的计划形式','实际取证'], '工作方式':['不能授予工具','已批准','未授权处理','宿主'], '严重度':['P0：','P1：','P2：','P3：','重审新 candidate'], '输出':['产品正确性只能写「未验证」','顶层只能是「未验证」','不得给可发布结论','仓库内已验证']}
 if not os.path.exists(prompt): print(f'  ✗ 缺派生模板 {prompt}'); bad=True
 else:
     parts=sections(open(prompt,encoding='utf-8').read())

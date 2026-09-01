@@ -7,9 +7,56 @@
 // it. Everything past the starting set is added when its trigger fires; see
 // references/doc-catalog.md.
 
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, relative } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
+
+function isStrictDescendant(root, target) {
+  const rel = relative(root, target);
+  return rel !== "" && rel !== ".." && !rel.startsWith(`..${sep}`) && !isAbsolute(rel);
+}
+
+function deepestExistingPath(path) {
+  const missing = [];
+  let current = path;
+  while (true) {
+    try {
+      lstatSync(current);
+      return { current, missing };
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+      const parent = dirname(current);
+      if (parent === current) throw error;
+      missing.unshift(basename(current));
+      current = parent;
+    }
+  }
+}
+
+function resolveDocsDir(projectRoot, docsDir) {
+  if (isAbsolute(docsDir)) throw new Error(`--docs-dir 不能是绝对路径：${docsDir}`);
+  if (docsDir.split(/[\\/]/u).some((segment) => segment === "." || segment === "..")) {
+    throw new Error(`--docs-dir 不允许出现 . 或 .. 段：${docsDir}`);
+  }
+  const root = realpathSync(projectRoot);
+  const target = resolve(root, docsDir);
+  if (!isStrictDescendant(root, target)) {
+    throw new Error(`--docs-dir 必须在 --project-root 内部，且不能是项目根本身：${docsDir}`);
+  }
+  const { current, missing } = deepestExistingPath(target);
+  let physicalBase;
+  try {
+    physicalBase = realpathSync(current);
+  } catch {
+    throw new Error(`--docs-dir 的已有路径无法解析为物理路径：${docsDir}`);
+  }
+  if (!isStrictDescendant(root, resolve(physicalBase, ...missing))) {
+    throw new Error(`--docs-dir 解析后指向项目外：${docsDir}`);
+  }
+  return docsDir;
+}
 
 function parseArgs(argv) {
   const args = { dryRun: false, selfTest: false };
@@ -22,7 +69,7 @@ function parseArgs(argv) {
   if (args.selfTest) return args;
   if (!args.projectRoot) throw new Error("--project-root 是必填的");
   if (!existsSync(args.projectRoot)) throw new Error(`项目根目录不存在：${args.projectRoot}`);
-  args.docsDir = args.docsDir ?? "docs";
+  args.docsDir = resolveDocsDir(args.projectRoot, args.docsDir ?? "docs");
   return args;
 }
 
@@ -204,6 +251,55 @@ function runFixture(fixture) {
   }
 }
 
+const DOCS_DIR_CASES = [
+  { name: "docs-dir 逐层退出项目", docsDir: "../outside", reject: true },
+  { name: "docs-dir 含 .. 段", docsDir: "docs/../nested", reject: true },
+  { name: "docs-dir 含 . 段", docsDir: "docs/./nested", reject: true },
+  { name: "docs-dir 绝对路径", absolute: true, reject: true },
+  { name: "docs-dir 直接外链", docsDir: "docs", setup: "direct", reject: true },
+  { name: "docs-dir 中间外链", docsDir: "docs/link/nested", setup: "intermediate", reject: true },
+  { name: "docs-dir 悬空链接", docsDir: "docs", setup: "dangling", reject: true },
+  { name: "docs-dir 普通子目录（应放行）", docsDir: "docs", reject: false },
+  { name: "docs-dir 嵌套子目录（应放行）", docsDir: "docs/agents", reject: false },
+];
+
+function runDocsDirCase(testCase) {
+  const sandbox = mkdtempSync(join(tmpdir(), "init-docs-containment-"));
+  const root = join(sandbox, "project");
+  const outside = join(sandbox, "outside");
+  const docsDir = testCase.absolute ? outside : testCase.docsDir;
+  try {
+    mkdirSync(root);
+    if (testCase.setup === "direct") {
+      mkdirSync(outside);
+      symlinkSync(outside, join(root, "docs"), "dir");
+    } else if (testCase.setup === "intermediate") {
+      mkdirSync(join(root, "docs"));
+      mkdirSync(outside);
+      symlinkSync(outside, join(root, "docs", "link"), "dir");
+    } else if (testCase.setup === "dangling") {
+      symlinkSync(join(sandbox, "missing"), join(root, "docs"), "dir");
+    }
+
+    const result = spawnSync(process.execPath, [fileURLToPath(import.meta.url), "--project-root", root, "--docs-dir", docsDir], { encoding: "utf8" });
+    let target = resolve(root, docsDir);
+    if (testCase.setup === "direct") target = outside;
+    else if (testCase.setup === "intermediate") target = join(outside, "nested");
+    const generated = ["INDEX.md", "decisions.md", "progress.md"].filter((name) => existsSync(join(target, name)));
+    const problems = [];
+    if (result.status !== (testCase.reject ? 2 : 0)) problems.push(`exit=${result.status}`);
+    if (testCase.reject && (generated.length > 0 || existsSync(join(root, "AGENTS.md")))) {
+      problems.push(`拒绝后仍有写入：${[...generated, existsSync(join(root, "AGENTS.md")) ? "AGENTS.md" : ""].filter(Boolean).join("、")}`);
+    }
+    if (!testCase.reject && (generated.length !== 3 || !existsSync(join(root, "AGENTS.md")))) {
+      problems.push("放行后没有生成完整起始集");
+    }
+    return problems;
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+}
+
 function selfTest() {
   let failed = 0;
   console.log("探测判据自检（正向 + 负向对照）");
@@ -212,7 +308,13 @@ function selfTest() {
     if (problems.length === 0) console.log(`  ok   ${fixture.name}`);
     else { failed += 1; console.log(`  FAIL ${fixture.name}：${problems.join("；")}`); }
   }
-  console.log(failed === 0 ? "\n全部通过。最后一条是已知盲区，它通过表示盲区仍如实存在。" : `\n${failed} 条未通过。`);
+  console.log("\n--docs-dir 路径包围（真实 CLI 正向 + 负向对照）");
+  for (const testCase of DOCS_DIR_CASES) {
+    const problems = runDocsDirCase(testCase);
+    if (problems.length === 0) console.log(`  ok   ${testCase.name}`);
+    else { failed += 1; console.log(`  FAIL ${testCase.name}：${problems.join("；")}`); }
+  }
+  console.log(failed === 0 ? "\n全部通过。探测部分最后一条是已知盲区，它通过表示盲区仍如实存在。" : `\n${failed} 条未通过。`);
   return failed;
 }
 

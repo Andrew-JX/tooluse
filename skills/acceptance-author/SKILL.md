@@ -24,7 +24,7 @@ description: Use only after the installed tooluse resident block confirms a high
 <!-- shared:external-anchor:start -->
 高影响契约冻结时必须写 `产品正确性的外部锚点 = <类别> · <计划形式>`：需求所有者确认 → 谁 + 打算取得什么形式的原话；角色矩阵或外部规格 → 路径或 URL 加章节；sandbox / UAT → 计划命令与预定证据位置。冻结的是类别与取证方式，不是尚未产生的运行结果；实际时间、输出与结论由 executor 产生、reviewer 复核。另一份 Agent 摘要不算锚点。
 
-填 `无` 不禁止实施，但产品正确性只能写「未验证」，不把仓库内闭环包装成产品闭环。
+填 `无` 不禁止实施，但产品正确性只能写「未验证」，不把仓库内闭环包装成产品闭环；此时不得给可发布结论。
 <!-- shared:external-anchor:end -->
 
 ## 判据检查

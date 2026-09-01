@@ -6,3 +6,6 @@
 3. **新 Skill 先在 2 次真实任务证明「不用它会重复犯同一种错」。** 否则先记在别处，不进包。
 
 改动理由写在 commit message，不另设变更账本；同一事实有两份，必有一份先烂。
+
+本地跑 `scripts/self-check.sh --strict` 前先 `python3 -m pip install pyyaml`：缺它时第 ② 项只能跳过，
+而严格模式把跳过算作失败，红的原因与改动无关。CI 的依赖安装见 `.github/workflows/self-check.yml`。

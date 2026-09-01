@@ -31,7 +31,7 @@ description: Use only when the installed tooluse resident gate has passed and th
 <!-- shared:external-anchor:start -->
 高影响契约冻结时必须写 `产品正确性的外部锚点 = <类别> · <计划形式>`：需求所有者确认 → 谁 + 打算取得什么形式的原话；角色矩阵或外部规格 → 路径或 URL 加章节；sandbox / UAT → 计划命令与预定证据位置。冻结的是类别与取证方式，不是尚未产生的运行结果；实际时间、输出与结论由 executor 产生、reviewer 复核。另一份 Agent 摘要不算锚点。
 
-填 `无` 不禁止实施，但产品正确性只能写「未验证」，不把仓库内闭环包装成产品闭环。
+填 `无` 不禁止实施，但产品正确性只能写「未验证」，不把仓库内闭环包装成产品闭环；此时不得给可发布结论。
 <!-- shared:external-anchor:end -->
 
 ## 裁决与输出
@@ -40,7 +40,8 @@ description: Use only when the installed tooluse resident gate has passed and th
 - 可达 P1：拒绝合并/发布，除非用户明确接受风险并有隔离措施。
 - P2：违反契约或发布门禁时阻塞本批，否则记录后续。
 - P3：默认不阻塞；不把偏好包装成缺陷。
+- 任何阻塞本批的 finding（含这类 P2）修复后，重审新 candidate；不接受执行方自称已修就关闭。
 
-先给 `通过`、`退回`、`有条件通过` 或 `未验证`。按严重度列 finding：标题、可复现证据、影响、最小修复与复验条件。结尾列出实际门禁与退出结果、未覆盖项、盲区清单、下一步权限、最没把握的判断和真正触发的规则。没有 actionable finding 时陈述通过依据与剩余风险，不虚构列表。
+先给 `通过`、`退回`、`有条件通过` 或 `未验证`。产品正确性为「未验证」时，顶层只能写 `未验证`，不得给可发布结论；「仓库内已验证」只能作为限定范围的子结论。按严重度列 finding：标题、可复现证据、影响、最小修复与复验条件。结尾列出实际门禁与退出结果、未覆盖项、盲区清单、下一步权限、最没把握的判断和真正触发的规则。没有 actionable finding 时陈述通过依据与剩余风险，不虚构列表。
 
 完整事故形态见 [references/incidents.md](./references/incidents.md)。
