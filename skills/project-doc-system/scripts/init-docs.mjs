@@ -58,6 +58,24 @@ function resolveDocsDir(projectRoot, docsDir) {
   return docsDir;
 }
 
+function existingRegularProjectFile(projectRoot, relativePath) {
+  const root = realpathSync(projectRoot);
+  const absolute = join(root, relativePath);
+  let stat;
+  try {
+    stat = lstatSync(absolute);
+  } catch (error) {
+    if (error.code === "ENOENT") return false;
+    throw error;
+  }
+  if (stat.isSymbolicLink()) throw new Error(`拒绝写入符号链接：${relativePath}`);
+  if (!stat.isFile()) throw new Error(`输出路径已存在但不是普通文件：${relativePath}`);
+  if (!isStrictDescendant(root, realpathSync(absolute))) {
+    throw new Error(`输出路径解析后指向项目外：${relativePath}`);
+  }
+  return true;
+}
+
 function parseArgs(argv) {
   const args = { dryRun: false, selfTest: false };
   for (let i = 0; i < argv.length; i += 1) {
@@ -263,6 +281,11 @@ const DOCS_DIR_CASES = [
   { name: "docs-dir 嵌套子目录（应放行）", docsDir: "docs/agents", reject: false },
 ];
 
+const OUTPUT_PATH_CASES = [
+  { name: "AGENTS.md 外链", path: "AGENTS.md", dangling: false },
+  { name: "docs/INDEX.md 悬空外链", path: "docs/INDEX.md", dangling: true },
+];
+
 function runDocsDirCase(testCase) {
   const sandbox = mkdtempSync(join(tmpdir(), "init-docs-containment-"));
   const root = join(sandbox, "project");
@@ -300,6 +323,28 @@ function runDocsDirCase(testCase) {
   }
 }
 
+function runOutputPathCase(testCase) {
+  const sandbox = mkdtempSync(join(tmpdir(), "init-docs-output-containment-"));
+  const root = join(sandbox, "project");
+  const outside = join(sandbox, "outside.md");
+  try {
+    mkdirSync(join(root, dirname(testCase.path)), { recursive: true });
+    if (!testCase.dangling) writeFileSync(outside, "ORIGINAL\n");
+    symlinkSync(outside, join(root, testCase.path), "file");
+    const result = spawnSync(process.execPath, [fileURLToPath(import.meta.url), "--project-root", root], { encoding: "utf8" });
+    const problems = [];
+    if (result.status !== 2) problems.push(`exit=${result.status}`);
+    if (existsSync(outside) && readFileSync(outside, "utf8") !== "ORIGINAL\n") problems.push("项目外文件被改写");
+    if (testCase.dangling && existsSync(outside)) problems.push("项目外悬空目标被创建");
+    if (existsSync(join(root, "docs", "progress.md")) || existsSync(join(root, "docs", "decisions.md"))) {
+      problems.push("拒绝后仍生成了其它文件");
+    }
+    return problems;
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+}
+
 function selfTest() {
   let failed = 0;
   console.log("探测判据自检（正向 + 负向对照）");
@@ -311,6 +356,12 @@ function selfTest() {
   console.log("\n--docs-dir 路径包围（真实 CLI 正向 + 负向对照）");
   for (const testCase of DOCS_DIR_CASES) {
     const problems = runDocsDirCase(testCase);
+    if (problems.length === 0) console.log(`  ok   ${testCase.name}`);
+    else { failed += 1; console.log(`  FAIL ${testCase.name}：${problems.join("；")}`); }
+  }
+  console.log("\n输出文件路径包围（真实 CLI 负向对照）");
+  for (const testCase of OUTPUT_PATH_CASES) {
+    const problems = runOutputPathCase(testCase);
     if (problems.length === 0) console.log(`  ok   ${testCase.name}`);
     else { failed += 1; console.log(`  FAIL ${testCase.name}：${problems.join("；")}`); }
   }
@@ -330,13 +381,13 @@ function main() {
 
   const files = plannedFiles(docsDir);
   const agentsPath = join(projectRoot, "AGENTS.md");
-  const agentsExists = existsSync(agentsPath);
+  const agentsExists = existingRegularProjectFile(projectRoot, "AGENTS.md");
   const agentsHasSection = agentsExists && readFileSync(agentsPath, "utf8").includes("machine-checked: architecture-manifest");
 
   const actions = files.map((file) => ({
     path: file.path,
     content: file.content,
-    action: existsSync(join(projectRoot, file.path)) ? "已存在，跳过" : "新建",
+    action: existingRegularProjectFile(projectRoot, file.path) ? "已存在，跳过" : "新建",
   }));
   actions.push({
     path: "AGENTS.md",
@@ -355,7 +406,7 @@ function main() {
       if (item.action === "追加文档与目录清单小节") {
         writeFileSync(absolute, `${readFileSync(absolute, "utf8").trimEnd()}\n${item.content}`, "utf8");
       } else {
-        writeFileSync(absolute, item.path === "AGENTS.md" ? `# ${relative("..", projectRoot) || "项目"} · 协作规则\n${item.content}` : item.content, "utf8");
+        writeFileSync(absolute, item.path === "AGENTS.md" ? `# ${basename(projectRoot) || "项目"} · 协作规则\n${item.content}` : item.content, "utf8");
       }
     }
   }

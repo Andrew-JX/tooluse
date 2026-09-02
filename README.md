@@ -26,7 +26,7 @@ bash tooluse/install.sh --commit "$TOOLUSE_COMMIT" --target ~/.claude/skills
 
 `--target` 是最终放置 skill 目录的目录；默认 `~/.claude/skills`，Codex 通常用 `~/.codex/skills`。安装器：
 
-- 内容只从传入 SHA 的 `git archive` 取；源仓库有任何改动即拒绝；
+- 安装 payload 只从传入 SHA 的 `git archive` 取；安装器会拒绝 Git 正常报告出的工作树改动，但这不校验安装器自身、Git 对象库或 clone 通道的可信性；
 - `<target>/.tooluse-version` 记录 SHA、已装 skill 与各目录/常驻文件的内容指纹，用来发现意外漂移，不是签名或防篡改证明；
 - `--target` 解析物理路径后复查：根目录、HOME、仓库内部、`.`/`..` 在创建前拒绝；合法但不存在的 target 会由安装器创建；
 - 把常驻块写到 `<target>` 父目录的 `tooluse-resident.md`；
@@ -41,9 +41,21 @@ bash tooluse/install.sh --commit "$TOOLUSE_COMMIT" --target ~/.claude/skills
 ```bash
 # 1. 备份移走旧安装（每次都用新目录，避免多次升级互相覆盖）
 TOOLUSE_BACKUP=$(mktemp -d ~/tooluse-backup.XXXXXX)
+TOOLUSE_MANIFEST=~/.claude/skills/.tooluse-version
+[ -f "$TOOLUSE_MANIFEST" ] && [ ! -L "$TOOLUSE_MANIFEST" ] || {
+  echo "版本记录必须是普通文件：$TOOLUSE_MANIFEST" >&2
+  exit 1
+}
+TOOLUSE_SKILLS=$(sed -n 's|^skill=||p' "$TOOLUSE_MANIFEST")
+while IFS= read -r s; do
+  [ -z "$s" ] || [[ "$s" =~ ^[a-z0-9-]+$ ]] || {
+    echo "版本记录含非法 skill 名：$s" >&2
+    exit 1
+  }
+done <<< "$TOOLUSE_SKILLS"
 while IFS= read -r s; do
   [ -n "$s" ] && mv ~/.claude/skills/"$s" "$TOOLUSE_BACKUP"/
-done < <(sed -n 's|^skill=||p' ~/.claude/skills/.tooluse-version)
+done <<< "$TOOLUSE_SKILLS"
 mv ~/.claude/skills/.tooluse-version "$TOOLUSE_BACKUP"/
 [ -e ~/.claude/tooluse-resident.md ] && mv ~/.claude/tooluse-resident.md "$TOOLUSE_BACKUP"/
 
@@ -75,6 +87,8 @@ mv ~/.claude/skills/thinking-toolkit "$TOOLUSE_BACKUP"/   # 若存在
 bash tooluse/install.sh --commit "$TOOLUSE_COMMIT" \
   --target ~/.claude/skills --only acceptance-author,evidence-bound-executor
 ```
+
+`--only` 决定本次完整安装集合，不是增量补装；安装器只向空位写入，因此日后要增减 skill，仍按上面的“备份旧安装 → 重装”执行。
 
 **把生成的 `tooluse-resident.md` 中「常驻块」复制进每个目标项目的 `CLAUDE.md` 或 `AGENTS.md`。** 这是日常改动唯一会自动到场的规则；完整高影响清单和升档门只在该文件中定义。
 
@@ -134,6 +148,7 @@ Matt 的 `implement`、`code-review` 等流程需要规格、固定 diff 基线�
 - 换模型、窗口或客户端只能降低共享盲区，不能证明审查独立；不同读者仍可能漏掉同一问题。
 - 规则来自已经被发现的事故；没被抓住的失败不会自动变成规则，本包也没有让未知事故自行浮出的机制。
 - 常驻块和 Skill 都是提示层约定，不是宿主强制权限边界。真正的只读审查、凭据隔离和部署限制必须由权限配置、容器或临时 worktree 实施。
+- 固定 SHA 让归档 payload 可复现，不等于签名或信任链。运行前仍要信任当前 `install.sh`、Git 对象库和取得仓库的通道；工作树干净检查只能发现 Git 正常报告出的漂移。
 - 本包故意不用 `allowed-tools`。它能写进 frontmatter 限定某个 Skill 可用的工具，但 `evidence-led-reviewer` 本身就需要 Bash 跑门禁和负向控制，而 Bash 就能写文件——只挡 Write/Edit 是缓解，不是隔离。把缓解写成看上去像保证的字段，比不写更危险。真需要只读审查，在宿主侧限权（permission 配置、只读容器、临时 worktree），那里才是强制的。
 - 判据、交接和外部锚点只能证明声明范围内的仓库事实；产品正确性仍需要需求所有者、外部规格或真实 sandbox/UAT 证据。
 - 路由准确率、规则覆盖率与人是否真的执行常驻块均未被本包自动测量。

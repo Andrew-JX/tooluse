@@ -148,7 +148,7 @@ fi
 check_target_guards() {
   local candidate=$1
   [ "$candidate" != "/" ] || die "--target 不能是根目录"
-  [ "$candidate" != "${HOME%/}" ] || die "--target 不能是 HOME 本身"
+  [ "$candidate" != "${resolved_home%/}" ] || die "--target 不能是 HOME 本身"
   case "$candidate" in
   "$root" | "$root"/*) die "--target 不能在 tooluse 仓库内：$candidate" ;;
   esac
@@ -191,6 +191,7 @@ resolve_intent() {
 
 reject_dot_segments "$target"
 target=$(resolve_intent "$target") || die "--target 路径无法解析：$target"
+resolved_home=$(abspath "$HOME") || die "HOME 路径无法解析：$HOME"
 reject_dot_segments "$target"
 check_target_guards "$target"
 [ -z "$(git status --porcelain --untracked-files=all)" ] || die "源仓库不干净；先提交、暂存外移或还原后再安装"

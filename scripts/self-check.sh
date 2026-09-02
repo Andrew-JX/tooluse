@@ -122,6 +122,20 @@ echo "⑩ 随包脚本自检"
 if command -v node >/dev/null 2>&1; then
   node skills/project-doc-system/scripts/init-docs.mjs --self-test >/dev/null 2>&1 || note "init-docs 自检失败"
 else skip "没有 node，跳过随包脚本自检"; fi
+install_guard_tmp=$(mktemp -d "${TMPDIR:-/tmp}/tooluse-home-guard.XXXXXX")
+mkdir "$install_guard_tmp/physical-home"
+ln -s "$install_guard_tmp/physical-home" "$install_guard_tmp/home-link"
+install_guard_output=$(HOME="$install_guard_tmp/home-link" bash install.sh \
+  --commit "$(git rev-parse HEAD)" --target "$install_guard_tmp/home-link" \
+  --only scope-bound-editor 2>&1)
+install_guard_status=$?
+if [ "$install_guard_status" -eq 0 ] || ! printf '%s' "$install_guard_output" | grep -q -- '--target 不能是 HOME 本身'; then
+  note "install.sh 未拒绝经符号链接解析后的 HOME 本身"
+fi
+if [ -n "$(find "$install_guard_tmp/physical-home" -mindepth 1 -print -quit)" ]; then
+  note "install.sh 拒绝 HOME 后仍有写入"
+fi
+rm -rf -- "$install_guard_tmp"
 
 echo "⑪ 常驻路由与共享块"
 python3 - <<'PY' || fail=1
