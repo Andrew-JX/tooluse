@@ -114,7 +114,7 @@ bash tooluse/install.sh --commit "$TOOLUSE_COMMIT" \
 
 先读常驻块的「高影响清单」和「升档门」。**确认高影响、当前用户授权本地冻结提交、并指定真正独立的复核读者，三项同时具备才启动三件套。** 缺任一项不启动三件套，风险仍按高影响对待；任务本身获授权时可按常驻纪律实施，但必须声明“未独立复核”，不得给 PASS、可合并或可发布结论。产品正确性的外部锚点可写“无”，但此时产品正确性仍是“未验证”，不得给可发布结论。
 
-三件套在 Codex 侧各自的 `agents/openai.yaml` 设了 `policy.allow_implicit_invocation: false`：Codex 不会自动匹配触发，只能用户显式 `$skill` 调用。这只是关掉自动触发，不校验升档门三条件是否齐备，也不是权限隔离——Skill 内的检查照旧执行。
+三件套在 Codex 和 Claude Code 中都允许模型匹配触发，也都允许用户显式调用；但模型只能在常驻块的升档门三条件齐备后启动。这个限制仍是提示层约定，不是宿主权限隔离——Skill 内的检查照旧执行。
 
 三件套按顺序：
 
@@ -139,6 +139,8 @@ bash tooluse/install.sh --commit "$TOOLUSE_COMMIT" \
 [mattpocock/skills](https://github.com/mattpocock/skills)。本仓库不复制、不 vendor、也不代替上游维护这些工程 Skills。
 
 Matt 的 `implement`、`code-review` 等流程需要规格、固定 diff 基线或 issue tracker 等前提。前提不存在时不要为了接流程人造 Issue 或文档，明确的小改动可直接实现并验证。
+
+选择安装时同时满足上游依赖：`tdd` 在接口边界需要设计时会调用 `codebase-design`；`code-review` 依赖 `setup-matt-pocock-skills` 为项目登记 issue tracker。缺少配套 Skill 时不要把主 Skill 视为完整可用。`implement` 是用户显式调用的整套实施流程，并包含提交步骤；它的正文不能代替当前用户对提交操作的明确授权。
 
 「问清需求」由 `grilling` 承担。`grill-me` 和 `grill-with-docs` 是转发壳，装其一必须同时装 `grilling`；`grill-with-docs` 另需 `domain-modeling`，并会写入项目的 `CONTEXT.md` 和 ADR。
 

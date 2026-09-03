@@ -2,5 +2,3 @@ interface:
   display_name: "证据约束执行者"
   short_description: "仅按已冻结的高影响契约实施并交接可独立复核的证据"
   default_prompt: "Use $evidence-bound-executor only for this frozen high-impact contract after the resident gate has passed."
-policy:
-  allow_implicit_invocation: false
