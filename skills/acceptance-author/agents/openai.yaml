@@ -3,6 +3,4 @@ interface:
   short_description: "仅在常驻块三条件齐备后冻结高影响任务的判据与三锚点"
   default_prompt: "Use $acceptance-author only after the installed resident gate has passed to freeze this high-impact acceptance contract."
 policy:
-  # 关闭隐式触发，只能由用户显式 $acceptance-author 调用。
-  # 这只是关掉自动触发，不校验升档门三条件，也不是权限隔离；Skill 内的检查照旧执行。
   allow_implicit_invocation: false
