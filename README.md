@@ -128,7 +128,11 @@ bash tooluse/install.sh --commit "$TOOLUSE_COMMIT" \
 问清需求、写实现、TDD、普通代码审查和诊断 bug 不由 tooluse 重复实现，使用
 [mattpocock/skills](https://github.com/mattpocock/skills)。本仓库不复制、不 vendor、也不代替上游维护这些工程 Skills。
 
-Matt 的 `implement`、`code-review` 等流程需要规格、固定 diff 基线或 issue tracker 等前提；`grill-with-docs` 会维护项目的 `CONTEXT.md` 和 ADR，不是一次纯问答。前提不存在时不要为了接流程人造 Issue 或文档，明确的小改动可直接实现并验证。安装与 Skill 清单以上游的
+Matt 的 `implement`、`code-review` 等流程需要规格、固定 diff 基线或 issue tracker 等前提。前提不存在时不要为了接流程人造 Issue 或文档，明确的小改动可直接实现并验证。
+
+「问清需求」由 `grilling` 承担。`grill-me` 和 `grill-with-docs` 是转发壳，装其一必须同时装 `grilling`；`grill-with-docs` 另需 `domain-modeling`，并会写入项目的 `CONTEXT.md` 和 ADR。
+
+安装与 Skill 清单以上游的
 [Installation](https://github.com/mattpocock/skills#installation-30-second-setup) 为准。
 
 ### 无法安装时
