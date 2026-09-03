@@ -2,3 +2,7 @@ interface:
   display_name: "证据约束执行者"
   short_description: "仅按已冻结的高影响契约实施并交接可独立复核的证据"
   default_prompt: "Use $evidence-bound-executor only for this frozen high-impact contract after the resident gate has passed."
+policy:
+  # 关闭隐式触发，只能由用户显式 $evidence-bound-executor 调用。
+  # 这只是关掉自动触发，不校验升档门三条件，也不是权限隔离；Skill 内的检查照旧执行。
+  allow_implicit_invocation: false

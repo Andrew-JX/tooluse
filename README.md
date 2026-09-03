@@ -24,10 +24,10 @@ git -C tooluse checkout --detach "$TOOLUSE_COMMIT"
 bash tooluse/install.sh --commit "$TOOLUSE_COMMIT" --target ~/.claude/skills
 ```
 
-`--target` 是最终放置 skill 目录的目录；默认 `~/.claude/skills`，Codex 通常用 `~/.codex/skills`。安装器：
+`--target` 是最终放置 skill 目录的目录；默认 `~/.claude/skills`，Codex 用 `~/.agents/skills`。安装器：
 
 - 安装 payload 只从传入 SHA 的 `git archive` 取；安装器会拒绝 Git 正常报告出的工作树改动，但这不校验安装器自身、Git 对象库或 clone 通道的可信性；
-- `<target>/.tooluse-version` 记录 SHA、已装 skill 与各目录/常驻文件的内容指纹，用来发现意外漂移，不是签名或防篡改证明；
+- `<target>/.tooluse-version` 记录 SHA、已装 skill 与各目录/常驻文件的内容指纹。每个 `--target` 各记一份、互不感知；指纹在下次运行安装器时暴露漂移，不持续阻止漂移，也不是签名或防篡改证明；
 - `--target` 解析物理路径后复查：根目录、HOME、仓库内部、`.`/`..` 在创建前拒绝；合法但不存在的 target 会由安装器创建；
 - 把常驻块写到 `<target>` 父目录的 `tooluse-resident.md`；
 - **只向空位安装；不自动升级或回滚。** 不删除、不替换、不覆盖已有 skill、常驻文件或版本记录：
@@ -39,9 +39,13 @@ bash tooluse/install.sh --commit "$TOOLUSE_COMMIT" --target ~/.claude/skills
 **升级：备份旧安装 → 安装新 SHA**（两步均由你执行）：
 
 ```bash
+# 0. 选定本次升级的目标；装了多个 target 就把本节整体重跑一遍，每次换一个值
+TOOLUSE_TARGET=~/.claude/skills
+TOOLUSE_RESIDENT=$(dirname "$TOOLUSE_TARGET")/tooluse-resident.md
+
 # 1. 备份移走旧安装（每次都用新目录，避免多次升级互相覆盖）
 TOOLUSE_BACKUP=$(mktemp -d ~/tooluse-backup.XXXXXX)
-TOOLUSE_MANIFEST=~/.claude/skills/.tooluse-version
+TOOLUSE_MANIFEST="$TOOLUSE_TARGET"/.tooluse-version
 [ -f "$TOOLUSE_MANIFEST" ] && [ ! -L "$TOOLUSE_MANIFEST" ] || {
   echo "版本记录必须是普通文件：$TOOLUSE_MANIFEST" >&2
   exit 1
@@ -54,31 +58,35 @@ while IFS= read -r s; do
   }
 done <<< "$TOOLUSE_SKILLS"
 while IFS= read -r s; do
-  [ -n "$s" ] && mv ~/.claude/skills/"$s" "$TOOLUSE_BACKUP"/
+  [ -n "$s" ] && mv "$TOOLUSE_TARGET"/"$s" "$TOOLUSE_BACKUP"/
 done <<< "$TOOLUSE_SKILLS"
-mv ~/.claude/skills/.tooluse-version "$TOOLUSE_BACKUP"/
-[ -e ~/.claude/tooluse-resident.md ] && mv ~/.claude/tooluse-resident.md "$TOOLUSE_BACKUP"/
+mv "$TOOLUSE_MANIFEST" "$TOOLUSE_BACKUP"/
+[ -e "$TOOLUSE_RESIDENT" ] && mv "$TOOLUSE_RESIDENT" "$TOOLUSE_BACKUP"/
 
 # 2. 安装新 SHA
-bash tooluse/install.sh --commit "$TOOLUSE_COMMIT" --target ~/.claude/skills
+bash tooluse/install.sh --commit "$TOOLUSE_COMMIT" --target "$TOOLUSE_TARGET"
 echo "旧版本备份在 $TOOLUSE_BACKUP"
 ```
+
+多个 `--target` 各持一份 manifest，升级不会互相带动：每个目标都要把上面两步完整执行一遍，只升 Claude 会让其余目标停在旧 SHA。
 
 **从手工安装迁移：** 早前 `cp -r` 的安装没有 manifest；清单从目标提交枚举，不另抄一份：
 
 ```bash
+TOOLUSE_TARGET=~/.claude/skills
+TOOLUSE_RESIDENT=$(dirname "$TOOLUSE_TARGET")/tooluse-resident.md
 TOOLUSE_BACKUP=$(mktemp -d ~/tooluse-backup.XXXXXX)
 while IFS= read -r s; do
-  [ -e ~/.claude/skills/"$s" ] && mv ~/.claude/skills/"$s" "$TOOLUSE_BACKUP"/
+  [ -e "$TOOLUSE_TARGET"/"$s" ] && mv "$TOOLUSE_TARGET"/"$s" "$TOOLUSE_BACKUP"/
 done < <(git -C tooluse ls-tree -d --name-only "$TOOLUSE_COMMIT:skills")
-[ -e ~/.claude/tooluse-resident.md ] && mv ~/.claude/tooluse-resident.md "$TOOLUSE_BACKUP"/
+[ -e "$TOOLUSE_RESIDENT" ] && mv "$TOOLUSE_RESIDENT" "$TOOLUSE_BACKUP"/
 ```
 
 **已退役的 skill 要自己删。** 安装器不清理目标提交之外的旧目录；早前 `cp -r skills/*` 装的
 `thinking-toolkit` 会继续被宿主加载，需移走：
 
 ```bash
-mv ~/.claude/skills/thinking-toolkit "$TOOLUSE_BACKUP"/   # 若存在
+mv "$TOOLUSE_TARGET"/thinking-toolkit "$TOOLUSE_BACKUP"/   # 若存在
 ```
 
 只装部分 skill：

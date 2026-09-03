@@ -2,3 +2,7 @@ interface:
   display_name: "证据驱动工程审查者"
   short_description: "仅由指定独立读者复核已冻结的高影响候选实现"
   default_prompt: "Use $evidence-led-reviewer only as the named independent reviewer of this frozen high-impact candidate."
+policy:
+  # 关闭隐式触发，只能由用户显式 $evidence-led-reviewer 调用。
+  # 这只是关掉自动触发，不校验升档门三条件，也不是权限隔离；Skill 内的检查照旧执行。
+  allow_implicit_invocation: false
