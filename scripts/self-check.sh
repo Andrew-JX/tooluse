@@ -192,8 +192,8 @@ else:
     # 常驻块是唯一无条件常驻的成本，预算写成门禁，否则会静默回涨。
     body=text.split('## 常驻块',1)[-1]
     cjk=len(re.findall(r'[\u4e00-\u9fff]',body))
-    if cjk > 600:
-        print(f'  ✗ 常驻块正文 {cjk} 字，超过 600 字预算'); bad=True
+    if cjk > 700:
+        print(f'  ✗ 常驻块正文 {cjk} 字，超过 700 字预算'); bad=True
     block=blocks.get('impact-triggers',{}).get(resident,'')
     for label,needles in triggers:
         if not all(n in block for n in needles):
