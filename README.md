@@ -149,6 +149,14 @@ Matt 的 `implement`、`code-review` 等流程需要规格、固定 diff 基线�
 安装与 Skill 清单以上游的
 [Installation](https://github.com/mattpocock/skills#installation-30-second-setup) 为准。
 
+### 自建 Skills：与 tooluse 纪律主题无关
+
+这一节收纳与冻结/证据/复核、范围收缩这些纪律主题无关，但同样按本仓库的安装与校验方式维护的自建 Skill。它们不是三件套的一部分，也不属于 Matt 的上游工程流程。
+
+| Skill | 作用 |
+| --- | --- |
+| `fluid-ui` | UI 交互质感增强层：滑动选中态、错峰入场、数字滚动、`light-dark()` 三档主题。只搬动效与连续性，不是页面模板——版式、组件构成和功能集仍由当前产品的需求决定，用了它的两个页面应该长得完全不同。 |
+
 ### 无法安装时
 
 不支持 Skills 的工具，手动提供所需 `SKILL.md` **和** `resident/tooluse-resident.md`；审查者可使用 [reviewer-role-prompt.md](skills/evidence-led-reviewer/assets/reviewer-role-prompt.md)。只给远程 README 链接不会自动加载 `skills/` 正文；读不到固定 SHA 的内容时，明确说“不可用”，不要凭记忆假装加载。
