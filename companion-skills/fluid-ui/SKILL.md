@@ -5,13 +5,13 @@ description: Make an interface feel smooth — sliding selection states, staged 
 
 # Fluid UI
 
-这是一个**交互质感增强层**,不是页面模板,也不是组件库。它只回答一件事:同样的结构,怎么让操作起来是顺的。页面长什么样、有哪些功能,由目标产品的需求决定,不由这里决定。
+风格偏 Apple 式克制、连续和轻微弹性；配色与布局沿用目标产品。这是一个**交互质感增强层**,不是页面模板,也不是组件库。它只回答一件事:同样的结构,怎么让操作起来是顺的。页面长什么样、有哪些功能,由目标产品的需求决定,不由这里决定。
 
 零依赖:CSS 过渡与 `requestAnimationFrame`,不引动画库。实现在 [assets/](assets/) 的 `fluid.css` 与 `fluid.js`,**数值以资产为准,本文只写规则**。
 
-## 迁移这五样
+## 按需选用
 
-用这个 skill,就是把下面五样搬到目标页面上。这五样是全部:
+先确认本次要优化的交互，再从下面能力中选择适用项。保留已有布局、品牌令牌和功能；没有数字、页签或主题切换需求时，不为满足本 Skill 增加它们。
 
 1. **缓动与时长** —— 曲线的选择和过冲的分档
 2. **选中态的滑动** —— 位移与宽度同时过渡
@@ -35,19 +35,27 @@ description: Make an interface feel smooth — sliding selection states, staged 
 4. **错峰必须封顶。** 入场延时取上限与「序号 × 步长」的较小值;不封顶时最后一个元素要等好几秒,观感是卡顿不是错落。
 5. **过冲幅度随控件尺寸反向走。** 越小的东西弹得越明显:面板几乎不弹,滑块单独一档。可逆的展开收起用对称曲线,带过冲的 ease-out 在回程会发飘。
 6. **SVG 的变换原点按 viewBox 算,不按元素自己的框算。** 逐个元素写 user-space 像素原点,或给元素加 `transform-box: fill-box`。
-7. **JS 驱动的动效自己查 `prefers-reduced-motion`。** CSS 的全局兜底管不到 `requestAnimationFrame` 写的东西,减弱动效时直接落终值。
+7. **JS 驱动的动效自己查 `prefers-reduced-motion`。** CSS 的作用域内兜底管不到 `requestAnimationFrame` 写的东西,减弱动效时直接落终值。
 
 ## 主题
 
-1. **深浅两个值写进 `light-dark()`,令牌只声明一遍。** 三档切换只改 `color-scheme`,不重复任何令牌值;跟随系统是移除属性,不是第三套值。
+1. **深浅两个值写进 `light-dark()`,令牌只声明一遍。** 显式启用的三档主题只在指定作用域上改 `color-scheme`，auto 跟随系统；未启用主题时继承宿主设置。
 2. **颜色绑 `var()`,不读进 JS。** 写进元素的 `style` 让浏览器解析,主题切换时颜色自动跟着变;读出来写死会在切主题后留着旧色,而且自定义属性读出来是未解析的字符串。
 3. **外部来源的文本一律 `textContent`。** 采集到的名字、用户输入、文件名都算;不拼 `innerHTML`。
 
 ## 完成条件
 
-产出页面的结构、组件类型和功能明显属于当前任务,同时滑动、入场、数字变化、主题切换四项质感可观测。**如果它看起来像另一个页面换了文字,说明迁移的是页面而不是手感。**
+仅验证本次选用的能力：交互变化可观测，减弱动效设置有效，目标页面原有布局、品牌和功能保持符合需求。未选用的能力不计入完成条件；页面之间可以保留一致的设计语言。
 
 常见失误形态见 [references/incidents.md](references/incidents.md)。
+
+## 资产接入
+
+读取 [assets/fluid.css](assets/fluid.css) 和 [assets/fluid.js](assets/fluid.js) 后按需接入。仅给需要增强的容器添加 `fluid-ui` 类；CSS 类、动画名与变量使用 `fluid-` 前缀。在容器上把 `--fluid-ink`、`--fluid-surface` 等颜色映射到项目已有令牌，资产配色只是默认值。
+
+`Fluid.init({ root: container })` 限定控件查询范围，不修改页面主题。只有任务需要主题切换时才传 `themeRoot: container`（须带 `fluid-ui` 类）和项目专用 `prefix`；它仅写该元素的 `data-fluid-theme`。全页主题应由项目现有主题管理器处理，或明确传入根元素。浮层创建在选定容器内，不复用页面原有的提示元素。
+
+选中态 DOM 使用 `.fluid-seg > .fluid-seg-pill + button[data-v]`，状态类为 `fluid-on`。主题控件需显式添加 `data-fluid-theme-control`。运行时按单个作用域初始化一次；框架组件应适配自身生命周期。
 
 ## 边界
 
@@ -55,4 +63,4 @@ description: Make an interface feel smooth — sliding selection states, staged 
 
 ## 出处
 
-缓动与连续性的取法来自动效库(GSAP、Anime.js 一类)公开的 easing 与 stagger 惯例;单个控件的反馈形态参考组件资源站;信息层级与留白参考成品站作品集。图形规范以 Anthropic 的 dataviz skill 为准,未复制其内容。
+缓动与连续性的取法来自动效库(GSAP、Anime.js 一类)公开的 easing 与 stagger 惯例;单个控件的反馈形态参考组件资源站;信息层级与留白参考成品站作品集。图形规范由目标项目决定，无外部 Skill 依赖。

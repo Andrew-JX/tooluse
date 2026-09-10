@@ -12,6 +12,7 @@ usage() {
   cat <<'EOF'
 用法：install.sh --commit <40 位 SHA> [--target <skills 目录>] [--only <skill[,skill...]>]
 
+仅安装 skills/ 中的核心；companion-skills/ 按 README 单独复制安装。
 --target 是最终包含各 skill 目录的目录；默认 ~/.claude/skills。
 常驻块写到 target 的父目录：<parent>/tooluse-resident.md。
 

@@ -21,10 +21,10 @@ case "${1:-}" in "") ;; --strict) strict=1 ;; *)
   exit 64
   ;;
 esac
-is_vendored() { grep -q "\`skills/$1/\`" NOTICE 2>/dev/null; }
+is_vendored() { grep -qF "\`${1%/}/\`" NOTICE 2>/dev/null; }
 
 echo "① frontmatter name 与目录名一致"
-for d in skills/*/; do
+for d in skills/*/ companion-skills/*/; do
   n=$(basename "$d") f="${d}SKILL.md"
   [ -f "$f" ] || {
     note "$n 缺 SKILL.md"
@@ -46,35 +46,35 @@ if [ -z "$validator" ]; then
 elif ! python3 -c 'import yaml' 2>/dev/null; then
   skip "缺 PyYAML，validator 未运行"
 else
-  for d in skills/*/; do
+  for d in skills/*/ companion-skills/*/; do
     [ -f "${d}SKILL.md" ] && python3 "$validator" "$d" >/dev/null 2>&1 || note "$(basename "$d") 未通过 validator"
   done
 fi
 
 echo "③ NOTICE 登记的第三方副本有出处"
 while IFS= read -r n; do
-  [ -d "skills/$n" ] || {
+  [ -d "$n" ] || {
     note "NOTICE 登记的 $n 不存在"
     continue
   }
-  s="skills/$n/SOURCE.md"
+  s="$n/SOURCE.md"
   [ -f "$s" ] || {
     note "$n 缺 SOURCE.md"
     continue
   }
   grep -qE '`[0-9a-f]{40}`' "$s" || note "$n/SOURCE.md 缺 SHA"
   grep -q '许可证' "$s" || note "$n/SOURCE.md 缺许可证"
-done < <(grep -oE "\`skills/[a-z0-9-]+/\`" NOTICE 2>/dev/null | tr -d '`' | sed 's|skills/||;s|/||')
+done < <(grep -oE "\`(skills|companion-skills)/[a-z0-9-]+/\`" NOTICE 2>/dev/null | tr -d '`' | sed 's|/$||')
 
 echo "④ 有 SOURCE.md 的 skill 已登记"
-for d in skills/*/; do
-  [ -f "${d}SOURCE.md" ] && ! is_vendored "$(basename "$d")" && note "$(basename "$d") 未登记 NOTICE"
+for d in skills/*/ companion-skills/*/; do
+  [ -f "${d}SOURCE.md" ] && ! is_vendored "$d" && note "${d} 未登记 NOTICE"
 done
 
 echo "⑤ 第三方内容没有本地改动"
-for d in skills/*/ scripts/vendor/; do
+for d in skills/*/ companion-skills/*/ scripts/vendor/; do
   n=$(basename "$d")
-  [ "$n" = vendor ] || is_vendored "$n" || continue
+  [ "$n" = vendor ] || is_vendored "$d" || continue
   [ -f "${d}SOURCE.md" ] || continue
   dirty=$(git status --porcelain -- "$d" | grep -vE 'SOURCE\.md|LICENSE|NOTICE' | wc -l | tr -d ' ')
   [ "$dirty" -eq 0 ] || note "第三方 $n 有 $dirty 个本地改动"
@@ -84,9 +84,9 @@ echo "⑥ 第三方内容历史只收录一次"
 if [ "$(git rev-parse --is-shallow-repository 2>/dev/null)" = true ]; then
   skip "浅克隆，跳过历史检查"
 else
-  for d in skills/*/; do
+  for d in skills/*/ companion-skills/*/; do
     n=$(basename "$d")
-    is_vendored "$n" || continue
+    is_vendored "$d" || continue
     count=$(git log --format=%H -- "$d" ":(exclude)${d}SOURCE.md" ":(exclude)${d}LICENSE*" ":(exclude)${d}NOTICE*" | wc -l | tr -d ' ')
     [ "$count" -le 1 ] || note "第三方 $n 内容有 $count 次提交"
   done

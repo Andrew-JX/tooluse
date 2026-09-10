@@ -13,7 +13,9 @@ tooluse 不替代需求澄清、实现、TDD、bug 诊断或普通代码审查�
 
 它提供的是提示层纪律，不是 CI、权限系统、独立审计机构或发布控制。强制边界仍由宿主权限、隔离环境、受保护分支和真实审批承担，详见[已知限制](#已知限制)。
 
-## 安装
+## 核心安装
+
+`skills/` 放核心纪律及直接配套；`companion-skills/` 放独立选用的能力包，见[可选配套 Skills](#可选配套-skills)。本节安装器仅管理核心。
 
 先选一个已人工审核的完整 40 位 commit SHA，不把浮动分支、未解析 tag 或远程内容直接当指令源。
 
@@ -149,17 +151,21 @@ Matt 的 `implement`、`code-review` 等流程需要规格、固定 diff 基线�
 安装与 Skill 清单以上游的
 [Installation](https://github.com/mattpocock/skills#installation-30-second-setup) 为准。
 
-### 自建 Skills：与 tooluse 纪律主题无关
+### 可选配套 Skills
 
-这一节收纳与冻结/证据/复核、范围收缩这些纪律主题无关，但同样按本仓库的安装与校验方式维护的自建 Skill。它们不是三件套的一部分，也不属于 Matt 的上游工程流程。
+配套包不依赖三件套或常驻纪律，不进入核心安装器的默认集合和版本记录。目录保持一个 Skill 一个文件夹，按用途在此分类。
 
-| Skill | 作用 |
-| --- | --- |
-| `fluid-ui` | UI 交互质感增强层：滑动选中态、错峰入场、数字滚动、`light-dark()` 三档主题。只搬动效与连续性，不是页面模板——版式、组件构成和功能集仍由当前产品的需求决定，用了它的两个页面应该长得完全不同。 |
+| 类别 | Skill | 定位 |
+| --- | --- | --- |
+| UI | [fluid-ui](companion-skills/fluid-ui/SKILL.md) | 偏 Apple 式克制、连续、轻微弹性的交互优化；滑动选中态、错峰入场、数字过渡和主题机制按需选用。保留目标产品的布局、品牌和功能，原生 DOM 资产可接入，框架项目需适配。 |
+
+独立安装：在按本页开头检出已审核的固定 SHA 后，把 `companion-skills/fluid-ui/` 整个目录复制到宿主的 Skills 目录（Codex 为 `~/.agents/skills/fluid-ui/`，Claude Code 为 `~/.claude/skills/fluid-ui/`）。目标同名目录已存在时先备份移走，再复制；不要合并覆盖。更新也按此方式单独进行，不运行核心安装器、不生成常驻文件。手动提供给 Agent 时也需连同 `assets/`、`references/` 一起提供。
+
+旧版核心安装记录若含 `skill=fluid-ui`，先按核心升级步骤备份旧安装、安装新核心，再从配套目录单独安装。未登记在核心记录里的手动安装不受核心升级管理。
 
 ### 无法安装时
 
-不支持 Skills 的工具，手动提供所需 `SKILL.md` **和** `resident/tooluse-resident.md`；审查者可使用 [reviewer-role-prompt.md](skills/evidence-led-reviewer/assets/reviewer-role-prompt.md)。只给远程 README 链接不会自动加载 `skills/` 正文；读不到固定 SHA 的内容时，明确说“不可用”，不要凭记忆假装加载。
+核心纪律用于不支持 Skills 的工具时，手动提供所需 `SKILL.md` **和** `resident/tooluse-resident.md`；审查者可使用 [reviewer-role-prompt.md](skills/evidence-led-reviewer/assets/reviewer-role-prompt.md)。只给远程 README 链接不会自动加载 `skills/` 正文；读不到固定 SHA 的内容时，明确说“不可用”，不要凭记忆假装加载。
 
 ### 授权边界
 
