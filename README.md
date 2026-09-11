@@ -157,7 +157,7 @@ Matt 的 `implement`、`code-review` 等流程需要规格、固定 diff 基线�
 
 | 类别 | Skill | 定位 |
 | --- | --- | --- |
-| UI | [fluid-ui](companion-skills/fluid-ui/SKILL.md) | 偏 Apple 式克制、连续、轻微弹性的交互优化；滑动选中态、错峰入场、数字过渡和主题机制按需选用。保留目标产品的布局、品牌和功能，原生 DOM 资产可接入，框架项目需适配。 |
+| UI | [fluid-ui](companion-skills/fluid-ui/SKILL.md) | 偏 Apple 式克制、连续、轻微弹性的交互优化；滑动选中态、错峰入场、数字过渡和主题机制按需选用。资产只提供运动，外观、配色和选中状态仍属目标产品；原生 DOM 可直接接入，框架项目需适配。 |
 
 独立安装：在按本页开头检出已审核的固定 SHA 后，把 `companion-skills/fluid-ui/` 整个目录复制到宿主的 Skills 目录（Codex 为 `~/.agents/skills/fluid-ui/`，Claude Code 为 `~/.claude/skills/fluid-ui/`）。目标同名目录已存在时先备份移走，再复制；不要合并覆盖。更新也按此方式单独进行，不运行核心安装器、不生成常驻文件。手动提供给 Agent 时也需连同 `assets/`、`references/` 一起提供。
 

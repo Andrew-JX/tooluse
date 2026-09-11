@@ -1,0 +1,70 @@
+/* fluid-ui 运动层。零依赖,直接 <link>。规则见 SKILL.md,这里只有数值和运动契约。
+   这里没有外观:背景、圆角、内边距、字号、阴影、配色和层叠全部由目标页面提供。
+   主题令牌见 ../references/theme.md,SVG 形变见 ../references/svg-motion.md。 */
+
+.fluid-ui {
+ /* 过冲幅度随控件尺寸反向走:越小的东西弹得越明显 */
+ --fluid-ease: cubic-bezier(0.32, 0.72, 0, 1); /* 位移、尺寸、颜色 */
+ --fluid-ease-pill: cubic-bezier(
+  0.34,
+  1.2,
+  0.64,
+  1
+ ); /* 滑块:位移最长,末尾轻微回弹 */
+ --fluid-ease-inout: cubic-bezier(
+  0.65,
+  0,
+  0.35,
+  1
+ ); /* 可逆的展开收起:两个方向对称 */
+}
+
+/* ---------- 选中态的滑动 ----------
+   运动契约,不是外观:轨道是滑块的定位祖先,滑块绝对定位、由 JS 写 transform 和 width。
+   滑块的高度、纵向位置、背景、圆角、阴影,以及轨道和选项的排布,都由页面自己给。
+   位移和宽度一起过渡,所以是滑过去而不是跳过去;只留 transform 会宽度跳变。 */
+
+.fluid-track {
+ position: relative;
+}
+
+.fluid-indicator {
+ position: absolute;
+ left: 0;
+ transition:
+  transform 0.38s var(--fluid-ease-pill),
+  width 0.38s var(--fluid-ease-pill);
+ will-change: transform, width;
+}
+.fluid-indicator.fluid-silent {
+ transition: none;
+} /* 首帧和重新测量不带动画 */
+
+/* ---------- 入场 ----------
+   错峰延时用 motion.js 的 stagger(),它自带封顶。 */
+
+.fluid-enter {
+ animation: fluid-enter 0.4s var(--fluid-ease) both;
+}
+@keyframes fluid-enter {
+ from {
+  opacity: 0;
+  transform: translateY(8px);
+ }
+ to {
+  opacity: 1;
+  transform: none;
+ }
+}
+
+/* 减弱动效只降低本层自己创建的动效 —— 按类名逐个点名,不用后代通配符,
+   否则会连容器内宿主自己的过渡一起砍掉。新增运动类时同步补进这份清单。
+   这条管不到 requestAnimationFrame 写的动效,那些在 JS 里查 reduced() 并直接落终值。 */
+@media (prefers-reduced-motion: reduce) {
+ .fluid-ui .fluid-indicator,
+ .fluid-ui .fluid-enter {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+ }
+}
