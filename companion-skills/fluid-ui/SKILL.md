@@ -1,6 +1,6 @@
 ---
 name: fluid-ui
-description: Make an interface feel smooth — sliding selection states, staged entrance, numbers that count instead of jump, and a theme switch that stays continuous. A quality layer applied to whatever page you are already building, not a page template. Use when polishing interaction feel, when a switch or tab change reads as a jump, or when a hand-written HTML/CSS/JS view needs Apple-grade motion.
+description: "Use when an interaction reads as a jump and should feel smooth: tab or segment switches, list entrance, animated numbers, theme toggles. Adds motion and state continuity to the page you are already building; not a page template or component library."
 ---
 
 # Fluid UI
