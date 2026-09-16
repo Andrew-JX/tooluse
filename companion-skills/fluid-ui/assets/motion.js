@@ -21,7 +21,7 @@ globalThis.Fluid = (() => {
       fmt 由页面自己给:单位、千分位、语言都是页面的事。 */
   const counters = new WeakMap();
 
-  function countTo(node, to, fmt = (v) => String(Math.round(v)), ms = 620) {
+  function countTo(node, to, fmt = (v) => String(Math.round(v)), ms = 620, bag) {
     const prev = counters.get(node);
     if (prev && prev.raf) cancelAnimationFrame(prev.raf);
     const from = prev ? prev.value : Number(node.dataset.v || 0);
@@ -34,11 +34,13 @@ globalThis.Fluid = (() => {
     const t0 = performance.now();
     const state = { value: from, raf: 0 };
     counters.set(node, state);
+    if (bag) bag.add(state); // 作用域销毁时要能取消,否则回调继续写已卸载的节点
     const step = (now) => {
       const p = Math.min(1, (now - t0) / ms);
       state.value = from + (to - from) * (1 - (1 - p) ** 3);
       node.textContent = fmt(state.value);
       state.raf = p < 1 ? requestAnimationFrame(step) : 0;
+      if (!state.raf && bag) bag.delete(state);
     };
     state.raf = requestAnimationFrame(step);
   }
@@ -77,6 +79,7 @@ globalThis.Fluid = (() => {
       监听和已注册的滑块也摘不掉,SPA 重挂或弹层里的第二个容器都会出问题。 */
   function create(root = document) {
     const movers = new Set();
+    const running = new Set(); // 本作用域未完成的数字滚动,销毁时统一取消
     let disposed = false;
 
     /** 控件文案宽度变了就重量:resize、字体加载完成、任何改写选项文字的操作。
@@ -100,7 +103,8 @@ globalThis.Fluid = (() => {
       root,
       reduced,
       stagger,
-      countTo,
+      /** 走作用域的数字滚动:destroy() 时一并取消。 */
+      countTo: (node, to, fmt, ms) => countTo(node, to, fmt, ms, running),
       remeasure,
       /** 注册一个滑块:返回 move(target?, { silent }),并纳入 resize 与字体加载后的重量。
           DOM 契约:轨道带 .fluid-track,内部一个 .fluid-indicator,选项默认取 sel。 */
@@ -121,6 +125,12 @@ globalThis.Fluid = (() => {
         disposed = true;
         removeEventListener("resize", onResize);
         movers.clear();
+        // 未完成的数字滚动必须取消 —— 只摘监听的话回调还会继续写已卸载的节点。
+        running.forEach((s) => {
+          if (s.raf) cancelAnimationFrame(s.raf);
+          s.raf = 0;
+        });
+        running.clear();
       },
     };
   }

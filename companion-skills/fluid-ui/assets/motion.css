@@ -61,10 +61,14 @@
    否则会连容器内宿主自己的过渡一起砍掉。新增运动类时同步补进这份清单。
    这条管不到 requestAnimationFrame 写的动效,那些在 JS 里查 reduced() 并直接落终值。 */
 @media (prefers-reduced-motion: reduce) {
+ /* 时长要压掉,延时也要清零 —— 只压时长的话错峰的 animation-delay 仍在,
+    内容依旧要等上几百毫秒才出现。 */
  .fluid-ui .fluid-indicator,
  .fluid-ui .fluid-enter {
   animation-duration: 0.01ms !important;
+  animation-delay: 0ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
+  transition-delay: 0ms !important;
  }
 }

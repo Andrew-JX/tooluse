@@ -5,7 +5,7 @@ description: "Use when an interaction reads as a jump and should feel smooth: ta
 
 # Fluid UI
 
-风格偏 Apple 式克制、连续和轻微弹性;配色与布局沿用目标产品。这是一个**交互质感增强层**,不是页面模板,也不是组件库。它只回答一件事:同样的结构,怎么让操作起来是顺的。页面长什么样、有哪些功能,由目标产品的需求决定,不由这里决定。
+运动的力度服从目标产品:高频操作的页面优先直接、稳定,产品讲解的页面优先让过程看得清,品牌展示的页面可以更有表现力但不挡阅读和操作。配色与布局沿用目标产品。这是一个**交互质感增强层**,不是页面模板,也不是组件库。它只回答一件事:同样的结构,怎么让操作起来是顺的。页面长什么样、有哪些功能,由目标产品的需求决定,不由这里决定。
 
 零依赖:CSS 过渡与 `requestAnimationFrame`,不引动画库。实现在 [assets/](assets/) 的 `motion.css` 与 `motion.js`,**数值以资产为准,本文只写规则**。
 
@@ -38,13 +38,15 @@ description: "Use when an interaction reads as a jump and should feel smooth: ta
 7. **过冲幅度随控件尺寸反向走。** 越小的东西弹得越明显:面板几乎不弹,滑块单独一档。可逆的展开收起用对称曲线,带过冲的 ease-out 在回程会发飘。
 8. **增强层不覆盖宿主已有的状态。** 减弱动效的兜底、`transform` 一类会整体覆写的属性,以及全局监听,都要按自己创建的东西点名,不要用通配符接管容器内的一切。
 9. **JS 驱动的动效自己查 `prefers-reduced-motion`。** CSS 的作用域内兜底管不到 `requestAnimationFrame` 写的东西,减弱动效时直接落终值。
-10. **一个容器一个作用域,能销毁。** 全局单例在第二次初始化时会覆盖第一个作用域的配置,监听和已注册的控件也摘不掉;SPA 重挂、弹层里的第二个容器、热更新都会踩到。
+10. **一个容器一个作用域,能销毁。** 全局单例在第二次初始化时会覆盖第一个作用域的配置,监听和已注册的控件也摘不掉;SPA 重挂、弹层里的第二个容器、热更新都会踩到。销毁要连未完成的 `requestAnimationFrame` 一起取消,否则动效继续写已卸载的节点。
+11. **反向操作从当前画面接续。** 用户中途切回、再点一次或直接关掉时,新动效从屏幕上的当前值起算,不等上一段播完,也不从上一次的目标值起跳。
+12. **处理中到结果不掩盖真实进度。** 不闪回旧内容,不提前显示成功;等多久由业务决定,动效只负责让状态转换看得清。
 
 SVG 图形的形变另见 [references/svg-motion.md](references/svg-motion.md)。
 
 ## 完成条件
 
-仅验证本次选用的能力:交互变化可观测,减弱动效设置有效,目标页面原有布局、品牌和功能保持符合需求。未选用的能力不计入完成条件;页面之间可以保留一致的设计语言。
+仅验证本次选用的能力:交互变化可观测,快速来回切换和失败回退不留错位,卸载或路由切换后没有残留的动效在写节点,减弱动效下内容立即可用(不只是动得快),目标页面原有布局、品牌和功能保持符合需求。未选用的能力不计入完成条件;页面之间可以保留一致的设计语言。
 
 常见失误形态见 [references/incidents.md](references/incidents.md)。
 
@@ -68,8 +70,18 @@ ui.destroy();                                 // 组件卸载或路由切换时
 
 ## 边界
 
-只适用于自己写 DOM 的页面:上了框架时规则仍成立,但资产不能直接用。数据量大到需要虚拟滚动或增量重绘时,「变了就整体重画」不再适用。
+规则跨框架适用;资产是给自己写 DOM 的页面准备的,框架项目优先复用已装的动效能力,按宿主生命周期选择性接入,不为一个小效果新增整套依赖。数据量大到需要虚拟滚动或增量重绘时,「变了就整体重画」不再适用。
 
 ## 出处
 
-缓动与连续性的取法来自动效库(GSAP、Anime.js 一类)公开的 easing 与 stagger 惯例;单个控件的反馈形态参考组件资源站;信息层级与留白参考成品站作品集。图形规范由目标项目决定,无外部 Skill 依赖。
+缓动与 stagger 的取法来自动效库(GSAP、Anime.js 一类)公开的惯例。下面的参考按需打开,只借原则和交互模式,**不复制外观、版式和代码**:
+
+- 交互流程与状态齐不齐 —— [Mobbin](https://mobbin.com/)
+- 方向对比与表现力上限 —— [Awwwards](https://www.awwwards.com/)
+- 讲清输入到结果 —— [Wispr Flow](https://wisprflow.ai/)
+- 内容与品牌驱动的版面 —— [Aardvark Book Club](https://www.aardvarkbookclub.com/)
+- 展示型页面的个性 —— [Luke Baffait](https://lukebaffait.fr/)
+- 多元素的时间编排 —— [Remotion 动画文档](https://www.remotion.dev/docs/animating-properties);它要求动画由帧驱动,网页里不能照搬,且是[自定义许可](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md)
+- 具体效果的实现接口 —— [Motion Primitives](https://github.com/ibelick/motion-primitives)(MIT)
+
+图形规范由目标项目决定,无外部 Skill 依赖。
