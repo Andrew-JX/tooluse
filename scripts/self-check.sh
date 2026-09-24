@@ -2,6 +2,8 @@
 # 只检查可判定结构不变量；内容正确性仍需人和独立复核。
 set -uo pipefail
 cd "$(dirname "$0")/.."
+# companion-skills/ 可能整个不存在，未匹配的 glob 不能留成字面量去遍历
+shopt -s nullglob
 fail=0 skipped=0 strict=0
 note() {
   echo "  ✗ $1"
