@@ -118,7 +118,7 @@ node "$SKILL_DIR/scripts/init-docs.mjs" --project-root <path>
 重审的对象是修完后的新 candidate：candidate 一变，原来那份审查证据就不再成立。分级决定的是要不要修，
 不是谁来确认修对了；把曾经阻塞本批的问题降成「执行窗口自称已修」，恰好绕开了独立复核。
 
-**handoff 不重写验收。** 派活段只指向权威完成条件：使用三件套时是 contract SHA 或路径；未使用 contract 时是 Issue、外部规格或可复核的用户确认。交活段只能引用，不能把标准改写得贴合已经做出的实现。
+**handoff 不重写验收。** 派活段只指向权威完成条件：使用冻结审计时是 contract SHA 或路径；未使用 contract 时是 Issue、外部规格或可复核的用户确认。交活段只能引用，不能把标准改写得贴合已经做出的实现。
 
 ### 一批拆成多个并行任务
 
