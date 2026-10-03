@@ -103,7 +103,7 @@ const AGENTS_SECTION = `
 - 系统地图用于定位；随后按任务核对实现、调用方、配置和执行路径，未核对的结论标为「未验证」。这是执行纪律，门禁不能证明读者已执行。
 - 不把可从代码机械恢复的实现快照当长期权威。带时间、来源和过期条件的批次状态记录可以保留；生成清单须写明生成命令、输入范围和局限。
 - 同一事实只在一处维护，其余位置引用它。
-- 写成「必须」的规则要有机器门禁，否则改写成带边界的建议。
+- 能由命令或测试判定的「必须」要有机器门禁；需要人或模型判断的约束写明适用边界和判断依据，不冒充有门禁。
 
 ## 目录清单
 
@@ -227,7 +227,7 @@ function triggers(root, docsDir) {
       found.push("package.json 存在但无法解析 → 已跳过门禁探测，其余信号不受影响");
     }
     if (scripts && !scripts.some((name) => /^(test|check|verify|lint)/.test(name))) {
-      found.push("package.json 里没有 test/check/verify/lint 类命令 → 目前没有任何机器门禁，文档里的「必须」都无法被守住");
+      found.push("package.json 里没有 test/check/verify/lint 类命令 → 目前没有任何机器门禁，文档里可机械检查的「必须」都还没有被守住");
     }
   }
   return found;

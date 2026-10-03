@@ -1,4 +1,4 @@
 interface:
   display_name: "证据驱动工程审查者"
-  short_description: "仅由指定独立读者复核已冻结的高影响候选实现"
-  default_prompt: "Use $evidence-led-reviewer only as the named independent reviewer of this frozen high-impact candidate."
+  short_description: "作为独立读者复核固定版本的高影响改动或冻结审计"
+  default_prompt: "Use $evidence-led-reviewer as the independent reviewer of this pinned baseline and candidate."
